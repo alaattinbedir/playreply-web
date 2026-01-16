@@ -143,18 +143,18 @@ export default function AppsPage() {
   const handleSyncApp = async (appId: string) => {
     setSyncingAppId(appId);
 
-    // Call the n8n webhook to sync
     try {
       const app = apps.find(a => a.id === appId);
       if (app) {
-        await fetch(
-          `${process.env.NEXT_PUBLIC_N8N_WEBHOOK_BASE_URL || "https://mobixo.app.n8n.cloud/webhook"}/fetch-reviews`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ package_name: app.package_name }),
-          }
-        );
+        const response = await fetch("/api/n8n/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ package_name: app.package_name }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Sync failed");
+        }
       }
       // Reload data after sync
       await loadData();

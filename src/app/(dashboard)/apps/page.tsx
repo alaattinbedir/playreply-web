@@ -103,10 +103,19 @@ export default function AppsPage() {
   const canAddApp = plan.appsUsed < plan.appsLimit;
 
   const handleToggleAutoReply = async (appId: string, enabled: boolean) => {
-    // Optimistic update
+    // Optimistic update - create settings object if it doesn't exist
     setApps(apps.map(app =>
       app.id === appId
-        ? { ...app, settings: app.settings ? { ...app.settings, auto_reply_enabled: enabled } : undefined }
+        ? {
+            ...app,
+            settings: {
+              app_id: appId,
+              auto_reply_enabled: enabled,
+              auto_reply_min_rating: app.settings?.auto_reply_min_rating ?? 4,
+              auto_approve_min_rating: app.settings?.auto_approve_min_rating ?? null,
+              language_mode: app.settings?.language_mode ?? 'same',
+            }
+          }
         : app
     ));
 
@@ -117,7 +126,16 @@ export default function AppsPage() {
       // Revert on failure
       setApps(apps.map(app =>
         app.id === appId
-          ? { ...app, settings: app.settings ? { ...app.settings, auto_reply_enabled: !enabled } : undefined }
+          ? {
+              ...app,
+              settings: {
+                app_id: appId,
+                auto_reply_enabled: !enabled,
+                auto_reply_min_rating: app.settings?.auto_reply_min_rating ?? 4,
+                auto_approve_min_rating: app.settings?.auto_approve_min_rating ?? null,
+                language_mode: app.settings?.language_mode ?? 'same',
+              }
+            }
           : app
       ));
       toast.error("Failed to update settings");

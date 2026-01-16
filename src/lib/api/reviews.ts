@@ -257,6 +257,54 @@ export async function sendReply(reviewId: string): Promise<boolean> {
   }
 }
 
+export async function generateReply(reviewId: string): Promise<string | null> {
+  const supabase = createClient();
+
+  // Get the review
+  const { data: review } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("id", reviewId)
+    .single();
+
+  if (!review) return null;
+
+  // Call the n8n webhook to generate a reply
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_N8N_WEBHOOK_BASE_URL || "https://mobixo.app.n8n.cloud/webhook"}/generate-reply`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          review_id: review.review_id,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to generate reply");
+    }
+
+    // Wait a bit for n8n to process and save the reply
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Fetch the updated reply
+    const { data: reply } = await supabase
+      .from("replies")
+      .select("suggested_text")
+      .eq("review_id", review.review_id)
+      .single();
+
+    return reply?.suggested_text || null;
+  } catch (error) {
+    console.error("Error generating reply:", error);
+    return null;
+  }
+}
+
 export async function regenerateReply(reviewId: string): Promise<string | null> {
   const supabase = createClient();
 
@@ -269,7 +317,7 @@ export async function regenerateReply(reviewId: string): Promise<string | null> 
 
   if (!review) return null;
 
-  // Call the n8n webhook to generate a new reply
+  // Call the n8n webhook to regenerate the reply
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_N8N_WEBHOOK_BASE_URL || "https://mobixo.app.n8n.cloud/webhook"}/generate-reply`,
@@ -288,6 +336,9 @@ export async function regenerateReply(reviewId: string): Promise<string | null> 
     if (!response.ok) {
       throw new Error("Failed to regenerate reply");
     }
+
+    // Wait a bit for n8n to process and save the reply
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Fetch the updated reply
     const { data: reply } = await supabase

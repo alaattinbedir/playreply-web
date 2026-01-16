@@ -54,6 +54,7 @@ import {
   updateReviewStatus,
   approveReply,
   sendReply,
+  generateReply,
   regenerateReply,
   type Review,
 } from "@/lib/api/reviews";
@@ -137,6 +138,7 @@ export default function ReviewsPage() {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+  const [generatingReplyId, setGeneratingReplyId] = useState<string | null>(null);
 
   // Fetch data on mount and when filters change
   useEffect(() => {
@@ -243,18 +245,100 @@ export default function ReviewsPage() {
     }
   };
 
-  const handleRegenerateReply = async () => {
+  const handleGenerateOrRegenerateReply = async () => {
     if (!selectedReview) return;
 
     setIsRegenerating(true);
-    const newReply = await regenerateReply(selectedReview.id);
+    const hasExistingReply = !!selectedReview.reply;
+
+    // Use generateReply for new, regenerateReply for existing
+    const newReply = hasExistingReply
+      ? await regenerateReply(selectedReview.id)
+      : await generateReply(selectedReview.id);
+
     if (newReply) {
       setEditedReply(newReply);
-      toast.success("New reply generated");
+      // Update local state with the new reply
+      setReviews(reviews.map((r) =>
+        r.id === selectedReview.id
+          ? {
+              ...r,
+              status: "pending" as const,
+              reply: {
+                id: r.reply?.id || "",
+                app_id: r.app_id,
+                review_id: r.review_id,
+                suggested_text: newReply,
+                final_text: null,
+                sent_at: null,
+                send_status: "draft" as const,
+                error_message: null,
+                created_at: new Date().toISOString(),
+              },
+            }
+          : r
+      ));
+      // Also update selectedReview to reflect the new reply
+      setSelectedReview({
+        ...selectedReview,
+        status: "pending",
+        reply: {
+          id: selectedReview.reply?.id || "",
+          app_id: selectedReview.app_id,
+          review_id: selectedReview.review_id,
+          suggested_text: newReply,
+          final_text: null,
+          sent_at: null,
+          send_status: "draft",
+          error_message: null,
+          created_at: new Date().toISOString(),
+        },
+      });
+      toast.success(hasExistingReply ? "New reply generated" : "AI reply generated");
     } else {
-      toast.error("Failed to regenerate reply");
+      toast.error(hasExistingReply ? "Failed to regenerate reply" : "Failed to generate reply");
     }
     setIsRegenerating(false);
+  };
+
+  // Generate reply from card (for reviews without replies)
+  const handleGenerateReplyFromCard = async (reviewId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setGeneratingReplyId(reviewId);
+
+    const review = reviews.find((r) => r.id === reviewId);
+    if (!review) {
+      setGeneratingReplyId(null);
+      return;
+    }
+
+    const newReply = await generateReply(reviewId);
+    if (newReply) {
+      // Update local state with the new reply
+      setReviews(reviews.map((r) =>
+        r.id === reviewId
+          ? {
+              ...r,
+              status: "pending" as const,
+              reply: {
+                id: "",
+                app_id: r.app_id,
+                review_id: r.review_id,
+                suggested_text: newReply,
+                final_text: null,
+                sent_at: null,
+                send_status: "draft" as const,
+                error_message: null,
+                created_at: new Date().toISOString(),
+              },
+            }
+          : r
+      ));
+      toast.success("AI reply generated");
+    } else {
+      toast.error("Failed to generate reply");
+    }
+    setGeneratingReplyId(null);
   };
 
   // Bulk operations
@@ -657,13 +741,35 @@ export default function ReviewsPage() {
                         {review.text || "No review text"}
                       </p>
 
-                      {review.reply && (
+                      {review.reply ? (
                         <div className="flex items-center gap-2 mt-2">
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Sparkles className="h-3 w-3" />
                             AI Reply
                           </div>
                           <ReplyStatusBadge status={review.reply.send_status} />
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 mt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={(e) => handleGenerateReplyFromCard(review.id, e)}
+                            disabled={generatingReplyId === review.id}
+                          >
+                            {generatingReplyId === review.id ? (
+                              <>
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="h-3 w-3 mr-1" />
+                                Generate Reply
+                              </>
+                            )}
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -729,14 +835,29 @@ export default function ReviewsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={handleRegenerateReply}
+                            onClick={handleGenerateOrRegenerateReply}
                             disabled={isRegenerating}
                           >
-                            <RefreshCw className={cn("h-4 w-4 mr-1", isRegenerating && "animate-spin")} />
-                            {isRegenerating ? "Regenerating..." : "Regenerate"}
+                            {selectedReview.reply ? (
+                              <>
+                                <RefreshCw className={cn("h-4 w-4 mr-1", isRegenerating && "animate-spin")} />
+                                {isRegenerating ? "Regenerating..." : "Regenerate"}
+                              </>
+                            ) : (
+                              <>
+                                {isRegenerating ? (
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                ) : (
+                                  <Sparkles className="h-4 w-4 mr-1" />
+                                )}
+                                {isRegenerating ? "Generating..." : "Generate Reply"}
+                              </>
+                            )}
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Generate a new AI reply</TooltipContent>
+                        <TooltipContent>
+                          {selectedReview.reply ? "Generate a new AI reply" : "Generate an AI reply for this review"}
+                        </TooltipContent>
                       </Tooltip>
                     </div>
                     <Textarea

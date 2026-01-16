@@ -118,6 +118,55 @@ function ReplyStatusBadge({ status }: { status: "draft" | "approved" | "sent" | 
   );
 }
 
+// Platform icon component
+function PlatformIcon({ platform }: { platform: "android" | "ios" | null }) {
+  if (!platform) return null;
+
+  if (platform === "ios") {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-flex items-center justify-center h-5 w-5 rounded bg-gray-100 dark:bg-gray-800">
+              <svg
+                className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+              </svg>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>iOS App Store</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center justify-center h-5 w-5 rounded bg-green-100 dark:bg-green-900">
+            <svg
+              className="h-3.5 w-3.5 text-green-700 dark:text-green-300"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M17.523 15.342a.499.499 0 0 0 .677-.21l.882-1.687a.5.5 0 0 0-.094-.587l-.707-.707V9.5a5.502 5.502 0 0 0-4.281-5.365V3.5a1.5 1.5 0 0 0-3 0v.635A5.502 5.502 0 0 0 6.719 9.5v2.651l-.707.707a.5.5 0 0 0-.094.587l.882 1.687a.499.499 0 0 0 .677.21l.523-.274V18.5a2.5 2.5 0 0 0 2.5 2.5h2a2.5 2.5 0 0 0 2.5-2.5v-3.432l.523.274zM6.5 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm14 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+            </svg>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Google Play</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [apps, setApps] = useState<App[]>([]);
@@ -729,6 +778,7 @@ export default function ReviewsPage() {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <PlatformIcon platform={review.platform} />
                         <span className="font-medium">{review.author_name || "Anonymous"}</span>
                         <StarRating rating={review.rating} />
                         <StatusBadge status={review.status} />
@@ -801,7 +851,8 @@ export default function ReviewsPage() {
                       </span>
                     </div>
                     <div>
-                      <DialogTitle className="text-left">
+                      <DialogTitle className="text-left flex items-center gap-2">
+                        <PlatformIcon platform={selectedReview.platform} />
                         {selectedReview.author_name || "Anonymous"}
                       </DialogTitle>
                       <div className="flex items-center gap-2 mt-1">

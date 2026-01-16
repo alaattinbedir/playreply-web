@@ -11,6 +11,7 @@ export interface Review {
   created_at: string | null;
   status: "new" | "pending" | "replied" | "ignored";
   category: string | null;
+  platform: "android" | "ios" | null;
   app?: {
     id: string;
     display_name: string | null;

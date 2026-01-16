@@ -186,7 +186,7 @@ export async function approveReply(
 export async function sendReply(reviewId: string): Promise<boolean> {
   const supabase = createClient();
 
-  // Get the review
+  // Get the review with platform info
   const { data: review } = await supabase
     .from("reviews")
     .select("*")
@@ -210,10 +210,14 @@ export async function sendReply(reviewId: string): Promise<boolean> {
     return false;
   }
 
+  // Determine the correct webhook endpoint based on platform
+  const webhookEndpoint = review.platform === "ios" ? "send-ios-reply" : "send-reply";
+  const baseUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_BASE_URL || "https://mobixo.app.n8n.cloud/webhook";
+
   // Call the n8n webhook to send the reply
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_N8N_WEBHOOK_BASE_URL || "https://mobixo.app.n8n.cloud/webhook"}/send-reply`,
+      `${baseUrl}/${webhookEndpoint}`,
       {
         method: "POST",
         headers: {

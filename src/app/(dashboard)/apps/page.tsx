@@ -17,6 +17,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -36,6 +43,10 @@ import {
   AlertCircle,
   CheckCircle2,
   HelpCircle,
+  Settings,
+  Bot,
+  Send,
+  Shield,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -56,6 +67,8 @@ export default function AppsPage() {
   const [displayName, setDisplayName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [syncingAppId, setSyncingAppId] = useState<string | null>(null);
+  const [settingsDialogApp, setSettingsDialogApp] = useState<App | null>(null);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   // Plan info
   const [plan, setPlan] = useState({
@@ -165,6 +178,32 @@ export default function AppsPage() {
     } finally {
       setSyncingAppId(null);
     }
+  };
+
+  const handleSaveAutomationSettings = async (
+    appId: string,
+    settings: {
+      auto_reply_enabled: boolean;
+      auto_reply_min_rating: number;
+      auto_approve_min_rating: number | null;
+    }
+  ) => {
+    setIsSavingSettings(true);
+    const success = await updateAppSettings(appId, settings);
+
+    if (success) {
+      // Update local state
+      setApps(apps.map(app =>
+        app.id === appId
+          ? { ...app, settings: app.settings ? { ...app.settings, ...settings } : undefined }
+          : app
+      ));
+      toast.success("Automation settings saved");
+      setSettingsDialogApp(null);
+    } else {
+      toast.error("Failed to save settings");
+    }
+    setIsSavingSettings(false);
   };
 
   if (loading) {
@@ -326,6 +365,11 @@ export default function AppsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setSettingsDialogApp(app)}>
+                              <Settings className="mr-2 h-4 w-4" />
+                              Automation Settings
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => handleSyncApp(app.id)}>
                               <RefreshCw className="mr-2 h-4 w-4" />
                               Sync Now
@@ -474,7 +518,193 @@ export default function AppsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Automation Settings Dialog */}
+        <Dialog open={!!settingsDialogApp} onOpenChange={(open) => !open && setSettingsDialogApp(null)}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Bot className="h-5 w-5 text-primary" />
+                Automation Settings
+              </DialogTitle>
+              <DialogDescription>
+                Configure automation rules for {settingsDialogApp?.display_name || settingsDialogApp?.package_name}
+              </DialogDescription>
+            </DialogHeader>
+            {settingsDialogApp && (
+              <AutomationSettingsForm
+                app={settingsDialogApp}
+                onSave={handleSaveAutomationSettings}
+                isSaving={isSavingSettings}
+                onCancel={() => setSettingsDialogApp(null)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </TooltipProvider>
+  );
+}
+
+// Automation Settings Form Component
+function AutomationSettingsForm({
+  app,
+  onSave,
+  isSaving,
+  onCancel,
+}: {
+  app: App;
+  onSave: (appId: string, settings: {
+    auto_reply_enabled: boolean;
+    auto_reply_min_rating: number;
+    auto_approve_min_rating: number | null;
+  }) => void;
+  isSaving: boolean;
+  onCancel: () => void;
+}) {
+  const [autoReplyEnabled, setAutoReplyEnabled] = useState(
+    app.settings?.auto_reply_enabled || false
+  );
+  const [autoReplyMinRating, setAutoReplyMinRating] = useState(
+    app.settings?.auto_reply_min_rating?.toString() || "4"
+  );
+  const [autoApproveMinRating, setAutoApproveMinRating] = useState(
+    app.settings?.auto_approve_min_rating?.toString() || "none"
+  );
+
+  const handleSubmit = () => {
+    onSave(app.id, {
+      auto_reply_enabled: autoReplyEnabled,
+      auto_reply_min_rating: parseInt(autoReplyMinRating),
+      auto_approve_min_rating: autoApproveMinRating === "none" ? null : parseInt(autoApproveMinRating),
+    });
+  };
+
+  return (
+    <div className="space-y-6 py-4">
+      {/* Auto-Reply Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Bot className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <Label htmlFor="auto-reply" className="text-base font-medium">
+                Auto-Reply
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Automatically generate AI replies for reviews
+              </p>
+            </div>
+          </div>
+          <Switch
+            id="auto-reply"
+            checked={autoReplyEnabled}
+            onCheckedChange={setAutoReplyEnabled}
+          />
+        </div>
+
+        {autoReplyEnabled && (
+          <div className="ml-[52px] space-y-3 animate-in fade-in slide-in-from-top-2">
+            <div className="space-y-2">
+              <Label htmlFor="min-rating" className="text-sm">
+                Minimum Rating for Auto-Reply
+              </Label>
+              <Select value={autoReplyMinRating} onValueChange={setAutoReplyMinRating}>
+                <SelectTrigger id="min-rating" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">All reviews (1-5 stars)</SelectItem>
+                  <SelectItem value="2">2+ stars</SelectItem>
+                  <SelectItem value="3">3+ stars</SelectItem>
+                  <SelectItem value="4">4+ stars (Recommended)</SelectItem>
+                  <SelectItem value="5">Only 5 stars</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                AI will generate replies for reviews with this rating or higher
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Divider */}
+      <div className="border-t" />
+
+      {/* Auto-Approve Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+            <Shield className="h-5 w-5 text-green-600" />
+          </div>
+          <div>
+            <Label className="text-base font-medium">
+              Auto-Approve
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              Skip manual approval for certain reviews
+            </p>
+          </div>
+        </div>
+
+        <div className="ml-[52px] space-y-2">
+          <Label htmlFor="auto-approve-rating" className="text-sm">
+            Auto-Approve Threshold
+          </Label>
+          <Select value={autoApproveMinRating} onValueChange={setAutoApproveMinRating}>
+            <SelectTrigger id="auto-approve-rating" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Manual approval for all</SelectItem>
+              <SelectItem value="5">Only 5 stars</SelectItem>
+              <SelectItem value="4">4+ stars (Recommended)</SelectItem>
+              <SelectItem value="3">3+ stars</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Reviews meeting this threshold will be auto-approved and sent without manual review
+          </p>
+        </div>
+      </div>
+
+      {/* Auto-Send Info */}
+      {autoApproveMinRating !== "none" && (
+        <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-4 animate-in fade-in">
+          <div className="flex gap-3">
+            <Send className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                Automatic Sending Enabled
+              </p>
+              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                Replies for {autoApproveMinRating}+ star reviews will be sent automatically
+                every hour without your approval.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Actions */}
+      <DialogFooter className="pt-4">
+        <Button variant="outline" onClick={onCancel} disabled={isSaving}>
+          Cancel
+        </Button>
+        <Button onClick={handleSubmit} disabled={isSaving}>
+          {isSaving ? (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            "Save Settings"
+          )}
+        </Button>
+      </DialogFooter>
+    </div>
   );
 }

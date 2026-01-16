@@ -24,6 +24,7 @@ import {
   Sparkles,
   Crown,
   X,
+  BarChart3,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Apps", href: "/apps", icon: AppWindow },
   { name: "Reviews", href: "/reviews", icon: MessageCircle },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 

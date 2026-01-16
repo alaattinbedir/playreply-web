@@ -43,6 +43,9 @@ import {
   AlertCircle,
   Inbox,
   Loader2,
+  CheckSquare,
+  Square,
+  Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -132,6 +135,8 @@ export default function ReviewsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
 
   // Fetch data on mount and when filters change
   useEffect(() => {
@@ -252,6 +257,155 @@ export default function ReviewsPage() {
     setIsRegenerating(false);
   };
 
+  // Bulk operations
+  const toggleSelectReview = (reviewId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(reviewId)) {
+      newSelected.delete(reviewId);
+    } else {
+      newSelected.add(reviewId);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === reviews.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(reviews.map((r) => r.id)));
+    }
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedIds.size === 0) return;
+
+    setIsBulkProcessing(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const reviewId of selectedIds) {
+      const review = reviews.find((r) => r.id === reviewId);
+      if (review && review.reply?.suggested_text) {
+        const success = await approveReply(reviewId, review.reply.final_text || review.reply.suggested_text);
+        if (success) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      }
+    }
+
+    // Refresh reviews
+    const [reviewsData, statsData] = await Promise.all([
+      getReviews({
+        status: filterStatus !== "all" ? filterStatus : undefined,
+        rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
+        appId: filterApp !== "all" ? filterApp : undefined,
+      }),
+      getReviewStats(),
+    ]);
+    setReviews(reviewsData);
+    setStats(statsData);
+    setSelectedIds(new Set());
+    setIsBulkProcessing(false);
+
+    if (successCount > 0) {
+      toast.success(`${successCount} review${successCount > 1 ? "s" : ""} approved`);
+    }
+    if (failCount > 0) {
+      toast.error(`${failCount} review${failCount > 1 ? "s" : ""} failed to approve`);
+    }
+  };
+
+  const handleBulkIgnore = async () => {
+    if (selectedIds.size === 0) return;
+
+    setIsBulkProcessing(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const reviewId of selectedIds) {
+      const success = await updateReviewStatus(reviewId, "ignored");
+      if (success) {
+        successCount++;
+      } else {
+        failCount++;
+      }
+    }
+
+    // Refresh reviews
+    const [reviewsData, statsData] = await Promise.all([
+      getReviews({
+        status: filterStatus !== "all" ? filterStatus : undefined,
+        rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
+        appId: filterApp !== "all" ? filterApp : undefined,
+      }),
+      getReviewStats(),
+    ]);
+    setReviews(reviewsData);
+    setStats(statsData);
+    setSelectedIds(new Set());
+    setIsBulkProcessing(false);
+
+    if (successCount > 0) {
+      toast.success(`${successCount} review${successCount > 1 ? "s" : ""} ignored`);
+    }
+    if (failCount > 0) {
+      toast.error(`${failCount} review${failCount > 1 ? "s" : ""} failed to ignore`);
+    }
+  };
+
+  const handleBulkSend = async () => {
+    if (selectedIds.size === 0) return;
+
+    setIsBulkProcessing(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const reviewId of selectedIds) {
+      const review = reviews.find((r) => r.id === reviewId);
+      if (review && review.reply) {
+        // Approve first if needed
+        if (review.reply.send_status === "draft") {
+          await approveReply(reviewId, review.reply.final_text || review.reply.suggested_text || "");
+        }
+        const success = await sendReply(reviewId);
+        if (success) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      }
+    }
+
+    // Refresh reviews
+    const [reviewsData, statsData] = await Promise.all([
+      getReviews({
+        status: filterStatus !== "all" ? filterStatus : undefined,
+        rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
+        appId: filterApp !== "all" ? filterApp : undefined,
+      }),
+      getReviewStats(),
+    ]);
+    setReviews(reviewsData);
+    setStats(statsData);
+    setSelectedIds(new Set());
+    setIsBulkProcessing(false);
+
+    if (successCount > 0) {
+      toast.success(`${successCount} repl${successCount > 1 ? "ies" : "y"} sent`);
+    }
+    if (failCount > 0) {
+      toast.error(`${failCount} repl${failCount > 1 ? "ies" : "y"} failed to send`);
+    }
+  };
+
+  // Clear selection when filters change
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [filterStatus, filterRating, filterApp]);
+
   if (isLoading) {
     return (
       <div className="p-6 md:p-8 flex items-center justify-center min-h-[400px]">
@@ -350,6 +504,69 @@ export default function ReviewsPage() {
           </CardContent>
         </Card>
 
+        {/* Bulk Action Bar */}
+        {selectedIds.size > 0 && (
+          <Card className="sticky top-16 md:top-0 z-40 border-primary/50 bg-primary/5">
+            <CardContent className="p-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedIds(new Set())}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancel
+                  </Button>
+                  <span className="text-sm font-medium">
+                    {selectedIds.size} review{selectedIds.size > 1 ? "s" : ""} selected
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBulkIgnore}
+                    disabled={isBulkProcessing}
+                  >
+                    {isBulkProcessing ? (
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    ) : (
+                      <X className="h-4 w-4 mr-1" />
+                    )}
+                    Ignore All
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBulkApprove}
+                    disabled={isBulkProcessing}
+                  >
+                    {isBulkProcessing ? (
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    ) : (
+                      <Check className="h-4 w-4 mr-1" />
+                    )}
+                    Approve All
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleBulkSend}
+                    disabled={isBulkProcessing}
+                  >
+                    {isBulkProcessing ? (
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-1" />
+                    )}
+                    Send All
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Reviews list */}
         {reviews.length === 0 ? (
           <Card className="border-dashed">
@@ -374,14 +591,50 @@ export default function ReviewsPage() {
           </Card>
         ) : (
           <div className="space-y-3">
+            {/* Select all header */}
+            {reviews.length > 0 && (
+              <div className="flex items-center gap-2 px-2">
+                <button
+                  onClick={toggleSelectAll}
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {selectedIds.size === reviews.length ? (
+                    <CheckSquare className="h-5 w-5 text-primary" />
+                  ) : selectedIds.size > 0 ? (
+                    <Minus className="h-5 w-5 text-primary" />
+                  ) : (
+                    <Square className="h-5 w-5" />
+                  )}
+                  {selectedIds.size === reviews.length
+                    ? "Deselect all"
+                    : `Select all (${reviews.length})`}
+                </button>
+              </div>
+            )}
+
             {reviews.map((review) => (
               <Card
                 key={review.id}
-                className="hover:shadow-md transition-all cursor-pointer"
+                className={cn(
+                  "hover:shadow-md transition-all cursor-pointer",
+                  selectedIds.has(review.id) && "border-primary bg-primary/5"
+                )}
                 onClick={() => handleOpenReview(review)}
               >
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-start gap-4">
+                    {/* Checkbox */}
+                    <button
+                      onClick={(e) => toggleSelectReview(review.id, e)}
+                      className="shrink-0 mt-1"
+                    >
+                      {selectedIds.has(review.id) ? (
+                        <CheckSquare className="h-5 w-5 text-primary" />
+                      ) : (
+                        <Square className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
+                      )}
+                    </button>
+
                     {/* Avatar */}
                     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0">
                       <span className="text-sm font-medium text-primary">

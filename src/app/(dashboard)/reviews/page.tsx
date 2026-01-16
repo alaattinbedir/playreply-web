@@ -269,8 +269,9 @@ export default function ReviewsPage() {
             }
           : r
       ));
+      const storeName = selectedReview.platform === "ios" ? "App Store" : "Google Play";
       setSelectedReview(null);
-      toast.success("Reply sent to Google Play");
+      toast.success(`Reply sent to ${storeName}`);
     } else {
       toast.error("Failed to send reply");
     }

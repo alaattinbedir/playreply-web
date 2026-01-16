@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,31 +42,19 @@ import {
   ThumbsDown,
   AlertCircle,
   Inbox,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// Types
-interface Review {
-  id: string;
-  appId: string;
-  appName: string;
-  authorName: string;
-  rating: number;
-  text: string;
-  language: string;
-  createdAt: string;
-  status: "new" | "pending" | "replied" | "ignored";
-  reply?: {
-    id: string;
-    suggestedText: string;
-    finalText?: string;
-    sendStatus: "draft" | "approved" | "sent" | "error";
-    sentAt?: string;
-  };
-}
-
-// Mock data
-const mockReviews: Review[] = [];
+import {
+  getReviews,
+  getReviewStats,
+  updateReviewStatus,
+  approveReply,
+  sendReply,
+  regenerateReply,
+  type Review,
+} from "@/lib/api/reviews";
+import { getApps, type App } from "@/lib/api/apps";
 
 // Star rating component
 function StarRating({ rating }: { rating: number }) {
@@ -106,7 +94,7 @@ function StatusBadge({ status }: { status: Review["status"] }) {
 }
 
 // Reply status badge
-function ReplyStatusBadge({ status }: { status: NonNullable<Review["reply"]>["sendStatus"] }) {
+function ReplyStatusBadge({ status }: { status: "draft" | "approved" | "sent" | "error" }) {
   const variants = {
     draft: { label: "Draft", icon: Edit3, className: "text-muted-foreground" },
     approved: { label: "Approved", icon: Check, className: "text-blue-600" },
@@ -126,88 +114,141 @@ function ReplyStatusBadge({ status }: { status: NonNullable<Review["reply"]>["se
 }
 
 export default function ReviewsPage() {
-  const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [apps, setApps] = useState<App[]>([]);
+  const [stats, setStats] = useState<{
+    total: number;
+    new: number;
+    pending: number;
+    replied: number;
+    avgRating: number;
+  } | null>(null);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [editedReply, setEditedReply] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterRating, setFilterRating] = useState<string>("all");
   const [filterApp, setFilterApp] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
-  // Filter reviews
-  const filteredReviews = reviews.filter((review) => {
-    if (filterStatus !== "all" && review.status !== filterStatus) return false;
-    if (filterRating !== "all" && review.rating !== parseInt(filterRating)) return false;
-    if (filterApp !== "all" && review.appId !== filterApp) return false;
-    return true;
-  });
+  // Fetch data on mount and when filters change
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [reviewsData, appsData, statsData] = await Promise.all([
+          getReviews({
+            status: filterStatus !== "all" ? filterStatus : undefined,
+            rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
+            appId: filterApp !== "all" ? filterApp : undefined,
+          }),
+          getApps(),
+          getReviewStats(),
+        ]);
+        setReviews(reviewsData);
+        setApps(appsData);
+        setStats(statsData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Get unique apps for filter
-  const uniqueApps = [...new Set(reviews.map((r) => ({ id: r.appId, name: r.appName })))];
+    fetchData();
+  }, [filterStatus, filterRating, filterApp]);
 
   const handleOpenReview = (review: Review) => {
     setSelectedReview(review);
-    setEditedReply(review.reply?.finalText || review.reply?.suggestedText || "");
+    setEditedReply(review.reply?.final_text || review.reply?.suggested_text || "");
   };
 
   const handleApproveReply = async () => {
-    if (!selectedReview) return;
+    if (!selectedReview || !editedReply.trim()) return;
 
-    setReviews(reviews.map((r) =>
-      r.id === selectedReview.id
-        ? {
-            ...r,
-            status: "pending" as const,
-            reply: r.reply
-              ? { ...r.reply, finalText: editedReply, sendStatus: "approved" as const }
-              : undefined,
-          }
-        : r
-    ));
-    setSelectedReview(null);
+    const success = await approveReply(selectedReview.id, editedReply);
+    if (success) {
+      // Update local state
+      setReviews(reviews.map((r) =>
+        r.id === selectedReview.id
+          ? {
+              ...r,
+              status: "pending" as const,
+              reply: r.reply
+                ? { ...r.reply, final_text: editedReply, send_status: "approved" as const }
+                : undefined,
+            }
+          : r
+      ));
+      setSelectedReview(null);
+    }
   };
 
   const handleSendReply = async () => {
     if (!selectedReview) return;
 
     setIsSending(true);
-    // TODO: Call API to send reply
-    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    setReviews(reviews.map((r) =>
-      r.id === selectedReview.id
-        ? {
-            ...r,
-            status: "replied" as const,
-            reply: r.reply
-              ? { ...r.reply, sendStatus: "sent" as const, sentAt: new Date().toISOString() }
-              : undefined,
-          }
-        : r
-    ));
+    // First approve if not already approved
+    if (!selectedReview.reply || selectedReview.reply.send_status === "draft") {
+      await approveReply(selectedReview.id, editedReply);
+    }
+
+    const success = await sendReply(selectedReview.id);
+
+    if (success) {
+      setReviews(reviews.map((r) =>
+        r.id === selectedReview.id
+          ? {
+              ...r,
+              status: "replied" as const,
+              reply: r.reply
+                ? { ...r.reply, send_status: "sent" as const, sent_at: new Date().toISOString() }
+                : undefined,
+            }
+          : r
+      ));
+      setSelectedReview(null);
+    }
     setIsSending(false);
-    setSelectedReview(null);
   };
 
-  const handleIgnoreReview = () => {
+  const handleIgnoreReview = async () => {
     if (!selectedReview) return;
 
-    setReviews(reviews.map((r) =>
-      r.id === selectedReview.id
-        ? { ...r, status: "ignored" as const }
-        : r
-    ));
-    setSelectedReview(null);
+    const success = await updateReviewStatus(selectedReview.id, "ignored");
+    if (success) {
+      setReviews(reviews.map((r) =>
+        r.id === selectedReview.id
+          ? { ...r, status: "ignored" as const }
+          : r
+      ));
+      setSelectedReview(null);
+    }
   };
 
   const handleRegenerateReply = async () => {
     if (!selectedReview) return;
 
-    // TODO: Call API to regenerate reply
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    // Mock regenerated text
-    setEditedReply("Thank you for your feedback! We appreciate you taking the time to share your thoughts.");
+    setIsRegenerating(true);
+    const newReply = await regenerateReply(selectedReview.id);
+    if (newReply) {
+      setEditedReply(newReply);
+    }
+    setIsRegenerating(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-6 md:p-8 flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading reviews...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>
@@ -222,7 +263,7 @@ export default function ReviewsPage() {
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-sm py-1 px-3">
-              {filteredReviews.length} reviews
+              {reviews.length} reviews
             </Badge>
           </div>
         </div>
@@ -263,16 +304,16 @@ export default function ReviewsPage() {
                 </SelectContent>
               </Select>
 
-              {uniqueApps.length > 0 && (
+              {apps.length > 0 && (
                 <Select value={filterApp} onValueChange={setFilterApp}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="App" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Apps</SelectItem>
-                    {uniqueApps.map((app) => (
+                    {apps.map((app) => (
                       <SelectItem key={app.id} value={app.id}>
-                        {app.name}
+                        {app.display_name || app.package_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -297,21 +338,21 @@ export default function ReviewsPage() {
         </Card>
 
         {/* Reviews list */}
-        {filteredReviews.length === 0 ? (
+        {reviews.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-16">
               <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
                 <Inbox className="h-10 w-10 text-primary" />
               </div>
               <h3 className="text-xl font-semibold mb-2">
-                {reviews.length === 0 ? "No reviews yet" : "No reviews match filters"}
+                {stats?.total === 0 ? "No reviews yet" : "No reviews match filters"}
               </h3>
               <p className="text-muted-foreground text-center max-w-md">
-                {reviews.length === 0
+                {stats?.total === 0
                   ? "Connect an app to start receiving and responding to reviews."
                   : "Try adjusting your filters to see more reviews."}
               </p>
-              {reviews.length === 0 && (
+              {stats?.total === 0 && (
                 <Button className="mt-6" asChild>
                   <a href="/apps">Add an App</a>
                 </Button>
@@ -320,7 +361,7 @@ export default function ReviewsPage() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {filteredReviews.map((review) => (
+            {reviews.map((review) => (
               <Card
                 key={review.id}
                 className="hover:shadow-md transition-all cursor-pointer"
@@ -331,23 +372,23 @@ export default function ReviewsPage() {
                     {/* Avatar */}
                     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0">
                       <span className="text-sm font-medium text-primary">
-                        {review.authorName.charAt(0).toUpperCase()}
+                        {(review.author_name || "A").charAt(0).toUpperCase()}
                       </span>
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="font-medium">{review.authorName}</span>
+                        <span className="font-medium">{review.author_name || "Anonymous"}</span>
                         <StarRating rating={review.rating} />
                         <StatusBadge status={review.status} />
                         <span className="text-xs text-muted-foreground">
-                          {new Date(review.createdAt).toLocaleDateString()}
+                          {review.created_at ? new Date(review.created_at).toLocaleDateString() : ""}
                         </span>
                       </div>
 
                       <p className="text-sm text-muted-foreground line-clamp-2">
-                        {review.text}
+                        {review.text || "No review text"}
                       </p>
 
                       {review.reply && (
@@ -356,14 +397,14 @@ export default function ReviewsPage() {
                             <Sparkles className="h-3 w-3" />
                             AI Reply
                           </div>
-                          <ReplyStatusBadge status={review.reply.sendStatus} />
+                          <ReplyStatusBadge status={review.reply.send_status} />
                         </div>
                       )}
                     </div>
 
                     {/* App name */}
                     <Badge variant="secondary" className="shrink-0 hidden md:flex">
-                      {review.appName}
+                      {review.app?.display_name || review.app?.package_name || "Unknown App"}
                     </Badge>
 
                     {/* Action indicator */}
@@ -384,17 +425,17 @@ export default function ReviewsPage() {
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
                       <span className="text-lg font-medium text-primary">
-                        {selectedReview.authorName.charAt(0).toUpperCase()}
+                        {(selectedReview.author_name || "A").charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <div>
                       <DialogTitle className="text-left">
-                        {selectedReview.authorName}
+                        {selectedReview.author_name || "Anonymous"}
                       </DialogTitle>
                       <div className="flex items-center gap-2 mt-1">
                         <StarRating rating={selectedReview.rating} />
                         <span className="text-xs text-muted-foreground">
-                          {new Date(selectedReview.createdAt).toLocaleDateString()}
+                          {selectedReview.created_at ? new Date(selectedReview.created_at).toLocaleDateString() : ""}
                         </span>
                       </div>
                     </div>
@@ -406,7 +447,7 @@ export default function ReviewsPage() {
                   <div>
                     <h4 className="text-sm font-medium mb-2">Review</h4>
                     <div className="p-4 bg-muted/50 rounded-lg">
-                      <p className="text-sm">{selectedReview.text}</p>
+                      <p className="text-sm">{selectedReview.text || "No review text"}</p>
                     </div>
                   </div>
 
@@ -423,9 +464,10 @@ export default function ReviewsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={handleRegenerateReply}
+                            disabled={isRegenerating}
                           >
-                            <RefreshCw className="h-4 w-4 mr-1" />
-                            Regenerate
+                            <RefreshCw className={cn("h-4 w-4 mr-1", isRegenerating && "animate-spin")} />
+                            {isRegenerating ? "Regenerating..." : "Regenerate"}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Generate a new AI reply</TooltipContent>
@@ -500,12 +542,12 @@ export default function ReviewsPage() {
         </Dialog>
 
         {/* Quick stats */}
-        {reviews.length > 0 && (
+        {stats && stats.total > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold">
-                  {reviews.filter((r) => r.status === "new").length}
+                  {stats.new}
                 </div>
                 <div className="text-xs text-muted-foreground">New Reviews</div>
               </CardContent>
@@ -513,7 +555,7 @@ export default function ReviewsPage() {
             <Card>
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold">
-                  {reviews.filter((r) => r.status === "pending").length}
+                  {stats.pending}
                 </div>
                 <div className="text-xs text-muted-foreground">Pending Approval</div>
               </CardContent>
@@ -521,7 +563,7 @@ export default function ReviewsPage() {
             <Card>
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold">
-                  {reviews.filter((r) => r.status === "replied").length}
+                  {stats.replied}
                 </div>
                 <div className="text-xs text-muted-foreground">Replied</div>
               </CardContent>
@@ -529,9 +571,7 @@ export default function ReviewsPage() {
             <Card>
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-amber-600">
-                  {(
-                    reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length || 0
-                  ).toFixed(1)}
+                  {stats.avgRating.toFixed(1)}
                 </div>
                 <div className="text-xs text-muted-foreground">Avg. Rating</div>
               </CardContent>

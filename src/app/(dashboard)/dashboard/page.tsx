@@ -1,4 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,34 +17,69 @@ import {
   Zap,
   CheckCircle2,
   Sparkles,
+  RefreshCw,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { getDashboardStats, getPlanUsage, getRecentActivity, type DashboardStats, type PlanUsage, type RecentActivity } from "@/lib/api/stats";
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const firstName = user?.email?.split("@")[0] || "there";
-
-  // TODO: Fetch real stats from database
-  const stats = {
+export default function DashboardPage() {
+  const [userName, setUserName] = useState("there");
+  const [stats, setStats] = useState<DashboardStats>({
     totalReviews: 0,
     pendingReplies: 0,
     sentThisMonth: 0,
     avgResponseTime: "-",
-  };
-
-  // Plan info
-  const plan = {
+  });
+  const [plan, setPlan] = useState<PlanUsage>({
     name: "Free",
     repliesUsed: 0,
     repliesLimit: 50,
     appsUsed: 0,
     appsLimit: 1,
-  };
+  });
+  const [activities, setActivities] = useState<RecentActivity[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const usagePercentage = (plan.repliesUsed / plan.repliesLimit) * 100;
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.email) {
+          setUserName(user.email.split("@")[0]);
+        }
+
+        const [statsData, planData, activityData] = await Promise.all([
+          getDashboardStats(),
+          getPlanUsage(),
+          getRecentActivity(5),
+        ]);
+
+        setStats(statsData);
+        setPlan(planData);
+        setActivities(activityData);
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const usagePercentage = plan.repliesLimit > 0 ? (plan.repliesUsed / plan.repliesLimit) * 100 : 0;
+  const appsUsagePercentage = plan.appsLimit > 0 ? (plan.appsUsed / plan.appsLimit) * 100 : 0;
+
+  if (loading) {
+    return (
+      <div className="p-6 md:p-8 space-y-8">
+        <div className="flex items-center justify-center py-20">
+          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 md:p-8 space-y-8">
@@ -58,7 +95,7 @@ export default async function DashboardPage() {
               </Badge>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold">
-              Welcome back, {firstName}!
+              Welcome back, {userName}!
             </h1>
             <p className="text-muted-foreground mt-1">
               Here&apos;s what&apos;s happening with your app reviews
@@ -180,7 +217,7 @@ export default async function DashboardPage() {
                 <span className="text-muted-foreground">Connected Apps</span>
                 <span className="font-medium">{plan.appsUsed} / {plan.appsLimit}</span>
               </div>
-              <Progress value={(plan.appsUsed / plan.appsLimit) * 100} className="h-2" />
+              <Progress value={appsUsagePercentage} className="h-2" />
               <p className="text-xs text-muted-foreground">
                 {plan.appsLimit - plan.appsUsed} app slot{plan.appsLimit - plan.appsUsed !== 1 ? 's' : ''} available
               </p>
@@ -202,34 +239,44 @@ export default async function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex items-center gap-4 p-4 border rounded-xl bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10 transition-colors">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-medium shrink-0">
-                1
+            <div className={`flex items-center gap-4 p-4 border rounded-xl transition-colors ${plan.appsUsed > 0 ? 'bg-green-50 border-green-200' : 'bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10'}`}>
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full font-medium shrink-0 ${plan.appsUsed > 0 ? 'bg-green-500 text-white' : 'bg-primary text-primary-foreground'}`}>
+                {plan.appsUsed > 0 ? <CheckCircle2 className="h-5 w-5" /> : '1'}
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium">Connect your Google Play Console</h4>
                 <p className="text-sm text-muted-foreground truncate">
-                  Add your app to start fetching reviews
+                  {plan.appsUsed > 0 ? `${plan.appsUsed} app connected` : 'Add your app to start fetching reviews'}
                 </p>
               </div>
-              <Link href="/apps">
-                <Button size="sm" className="shrink-0">
-                  Add App
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              {plan.appsUsed === 0 && (
+                <Link href="/apps">
+                  <Button size="sm" className="shrink-0">
+                    Add App
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
             </div>
 
-            <div className="flex items-center gap-4 p-4 border rounded-xl opacity-50">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground font-medium shrink-0">
+            <div className={`flex items-center gap-4 p-4 border rounded-xl ${stats.pendingReplies > 0 ? '' : 'opacity-50'}`}>
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full font-medium shrink-0 ${stats.pendingReplies > 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                 2
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium">Review AI-generated replies</h4>
                 <p className="text-sm text-muted-foreground truncate">
-                  Approve or edit replies before sending
+                  {stats.pendingReplies > 0 ? `${stats.pendingReplies} replies waiting` : 'Approve or edit replies before sending'}
                 </p>
               </div>
+              {stats.pendingReplies > 0 && (
+                <Link href="/reviews?status=pending">
+                  <Button size="sm" variant="outline" className="shrink-0">
+                    Review
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
             </div>
 
             <div className="flex items-center gap-4 p-4 border rounded-xl opacity-50">
@@ -257,21 +304,55 @@ export default async function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                <MessageCircle className="h-8 w-8 text-muted-foreground" />
+            {activities.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                  <MessageCircle className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h4 className="font-medium">No activity yet</h4>
+                <p className="text-sm text-muted-foreground mt-1 max-w-[200px]">
+                  Add an app to start seeing your review activity here
+                </p>
+                <Link href="/apps" className="mt-4">
+                  <Button variant="outline" size="sm">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Your First App
+                  </Button>
+                </Link>
               </div>
-              <h4 className="font-medium">No activity yet</h4>
-              <p className="text-sm text-muted-foreground mt-1 max-w-[200px]">
-                Add an app to start seeing your review activity here
-              </p>
-              <Link href="/apps" className="mt-4">
-                <Button variant="outline" size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Your First App
-                </Button>
-              </Link>
-            </div>
+            ) : (
+              <div className="space-y-3">
+                {activities.map((activity) => (
+                  <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
+                      activity.type === 'reply_sent' ? 'bg-green-100' :
+                      activity.type === 'review_received' ? 'bg-blue-100' : 'bg-purple-100'
+                    }`}>
+                      {activity.type === 'reply_sent' ? (
+                        <Send className="h-4 w-4 text-green-600" />
+                      ) : activity.type === 'review_received' ? (
+                        <MessageCircle className="h-4 w-4 text-blue-600" />
+                      ) : (
+                        <Plus className="h-4 w-4 text-purple-600" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">{activity.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">{activity.description}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground shrink-0">
+                      {new Date(activity.timestamp).toLocaleDateString()}
+                    </span>
+                  </div>
+                ))}
+                <Link href="/reviews" className="block">
+                  <Button variant="ghost" size="sm" className="w-full">
+                    View All Activity
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

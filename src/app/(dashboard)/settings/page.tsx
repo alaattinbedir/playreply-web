@@ -38,13 +38,17 @@ import {
   Zap,
   AlertTriangle,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useCheckout } from "@/components/paddle-provider";
+import { getPlanUsage, type PlanUsage } from "@/lib/api/stats";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export default function SettingsPage() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [planUsage, setPlanUsage] = useState<PlanUsage | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { startCheckout, isLoading: isCheckoutLoading } = useCheckout();
@@ -56,25 +60,36 @@ export default function SettingsPage() {
   const [replyTone, setReplyTone] = useState("professional");
   const [replyLanguage, setReplyLanguage] = useState("auto");
 
-  // Mock plan data - will come from database
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const supabase = createClient();
+        const [{ data: { user } }, usage] = await Promise.all([
+          supabase.auth.getUser(),
+          getPlanUsage(),
+        ]);
+        setUser(user);
+        setPlanUsage(usage);
+      } catch (error) {
+        console.error("Error fetching settings data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Plan data from real usage
   const plan = {
-    name: "Free",
-    isPro: false,
-    repliesUsed: 12,
-    repliesLimit: 50,
-    appsUsed: 0,
-    appsLimit: 1,
+    name: planUsage?.name || "Free",
+    isPro: planUsage?.name === "Pro",
+    repliesUsed: planUsage?.repliesUsed || 0,
+    repliesLimit: planUsage?.repliesLimit || 50,
+    appsUsed: planUsage?.appsUsed || 0,
+    appsLimit: planUsage?.appsLimit || 1,
     nextBillingDate: null as string | null,
   };
-
-  useEffect(() => {
-    const getUser = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    getUser();
-  }, []);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -92,6 +107,17 @@ export default function SettingsPage() {
   };
 
   const usagePercentage = (plan.repliesUsed / plan.repliesLimit) * 100;
+
+  if (isLoading) {
+    return (
+      <div className="p-6 md:p-8 flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading settings...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 md:p-8 space-y-8 max-w-4xl">

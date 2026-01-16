@@ -28,12 +28,10 @@ export interface AppStats {
 export async function getApps(): Promise<App[]> {
   const supabase = createClient();
 
+  // Fetch apps
   const { data: apps, error } = await supabase
     .from("apps")
-    .select(`
-      *,
-      settings:app_settings(*)
-    `)
+    .select("*")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -41,19 +39,37 @@ export async function getApps(): Promise<App[]> {
     return [];
   }
 
-  // Fetch stats for each app
-  const appsWithStats = await Promise.all(
-    (apps || []).map(async (app) => {
+  if (!apps || apps.length === 0) {
+    return [];
+  }
+
+  // Fetch settings for all apps in a single query
+  const appIds = apps.map(app => app.id);
+  const { data: allSettings } = await supabase
+    .from("app_settings")
+    .select("*")
+    .in("app_id", appIds);
+
+  // Create a map for quick lookup
+  const settingsMap = new Map<string, AppSettings>();
+  (allSettings || []).forEach(setting => {
+    settingsMap.set(setting.app_id, setting);
+  });
+
+  // Fetch stats for each app and combine with settings
+  const appsWithData = await Promise.all(
+    apps.map(async (app) => {
       const stats = await getAppStats(app.id);
+      const settings = settingsMap.get(app.id) || null;
       return {
         ...app,
-        settings: app.settings?.[0] || null,
+        settings,
         stats,
       };
     })
   );
 
-  return appsWithStats;
+  return appsWithData;
 }
 
 export async function getAppStats(appId: string): Promise<AppStats> {

@@ -40,12 +40,12 @@ export interface ReviewFilters {
 export async function getReviews(filters?: ReviewFilters): Promise<Review[]> {
   const supabase = createClient();
 
+  // Fetch reviews with app info
   let query = supabase
     .from("reviews")
     .select(`
       *,
-      app:apps(id, display_name, package_name),
-      reply:replies(*)
+      app:apps(id, display_name, package_name)
     `)
     .order("created_at", { ascending: false });
 
@@ -60,41 +60,68 @@ export async function getReviews(filters?: ReviewFilters): Promise<Review[]> {
     query = query.eq("app_id", filters.appId);
   }
 
-  const { data, error } = await query;
+  const { data: reviews, error: reviewsError } = await query;
 
-  if (error) {
-    console.error("Error fetching reviews:", error);
+  if (reviewsError) {
+    console.error("Error fetching reviews:", reviewsError);
     return [];
   }
 
+  if (!reviews || reviews.length === 0) {
+    return [];
+  }
+
+  // Fetch replies separately and match by review_id
+  const reviewIds = reviews.map(r => r.review_id);
+  const { data: replies, error: repliesError } = await supabase
+    .from("replies")
+    .select("*")
+    .in("review_id", reviewIds);
+
+  if (repliesError) {
+    console.error("Error fetching replies:", repliesError);
+  }
+
+  // Create a map of replies by review_id
+  const repliesMap = new Map<string, Reply>();
+  (replies || []).forEach(reply => {
+    repliesMap.set(reply.review_id, reply);
+  });
+
   // Transform the data to match our interface
-  return (data || []).map((review) => ({
+  return reviews.map((review) => ({
     ...review,
-    reply: review.reply?.[0] || null,
+    reply: repliesMap.get(review.review_id) || null,
   }));
 }
 
 export async function getReviewById(reviewId: string): Promise<Review | null> {
   const supabase = createClient();
 
-  const { data, error } = await supabase
+  const { data: review, error: reviewError } = await supabase
     .from("reviews")
     .select(`
       *,
-      app:apps(id, display_name, package_name),
-      reply:replies(*)
+      app:apps(id, display_name, package_name)
     `)
     .eq("id", reviewId)
     .single();
 
-  if (error) {
-    console.error("Error fetching review:", error);
+  if (reviewError) {
+    console.error("Error fetching review:", reviewError);
     return null;
   }
 
+  // Fetch reply separately
+  const { data: reply } = await supabase
+    .from("replies")
+    .select("*")
+    .eq("review_id", review.review_id)
+    .single();
+
   return {
-    ...data,
-    reply: data.reply?.[0] || null,
+    ...review,
+    reply: reply || null,
   };
 }
 
@@ -158,22 +185,29 @@ export async function approveReply(
 export async function sendReply(reviewId: string): Promise<boolean> {
   const supabase = createClient();
 
-  // Get the review and reply
+  // Get the review
   const { data: review } = await supabase
     .from("reviews")
-    .select(`
-      *,
-      reply:replies(*)
-    `)
+    .select("*")
     .eq("id", reviewId)
     .single();
 
-  if (!review || !review.reply?.[0]) {
-    console.error("Review or reply not found");
+  if (!review) {
+    console.error("Review not found");
     return false;
   }
 
-  const reply = review.reply[0];
+  // Get the reply separately
+  const { data: reply } = await supabase
+    .from("replies")
+    .select("*")
+    .eq("review_id", review.review_id)
+    .single();
+
+  if (!reply) {
+    console.error("Reply not found");
+    return false;
+  }
 
   // Call the n8n webhook to send the reply
   try {

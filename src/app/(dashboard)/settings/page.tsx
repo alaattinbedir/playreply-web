@@ -43,6 +43,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { useCheckout } from "@/components/paddle-provider";
 import { getPlanUsage, type PlanUsage } from "@/lib/api/stats";
+import { toast } from "sonner";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export default function SettingsPage() {
@@ -96,6 +97,7 @@ export default function SettingsPage() {
     // TODO: Save profile to database
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSaving(false);
+    toast.success("Settings saved");
   };
 
   const handleUpgrade = async (planType: "starter" | "pro") => {
@@ -103,6 +105,7 @@ export default function SettingsPage() {
       await startCheckout(planType);
     } catch (error) {
       console.error("Checkout error:", error);
+      toast.error("Failed to start checkout");
     }
   };
 

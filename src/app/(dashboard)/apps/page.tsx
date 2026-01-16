@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getApps, addApp, updateAppSettings, deleteApp, type App } from "@/lib/api/apps";
 import { getPlanUsage } from "@/lib/api/stats";
+import { toast } from "sonner";
 
 export default function AppsPage() {
   const [apps, setApps] = useState<App[]>([]);
@@ -97,13 +98,16 @@ export default function AppsPage() {
     ));
 
     const success = await updateAppSettings(appId, { auto_reply_enabled: enabled });
-    if (!success) {
+    if (success) {
+      toast.success(enabled ? "Auto-reply enabled" : "Auto-reply disabled");
+    } else {
       // Revert on failure
       setApps(apps.map(app =>
         app.id === appId
           ? { ...app, settings: app.settings ? { ...app.settings, auto_reply_enabled: !enabled } : undefined }
           : app
       ));
+      toast.error("Failed to update settings");
     }
   };
 
@@ -118,6 +122,9 @@ export default function AppsPage() {
       setPackageName("");
       setDisplayName("");
       setIsAddDialogOpen(false);
+      toast.success("App added successfully");
+    } else {
+      toast.error("Failed to add app");
     }
     setIsAdding(false);
   };
@@ -127,6 +134,9 @@ export default function AppsPage() {
     if (success) {
       setApps(apps.filter(app => app.id !== appId));
       setPlan(prev => ({ ...prev, appsUsed: prev.appsUsed - 1 }));
+      toast.success("App deleted");
+    } else {
+      toast.error("Failed to delete app");
     }
   };
 
@@ -148,8 +158,10 @@ export default function AppsPage() {
       }
       // Reload data after sync
       await loadData();
+      toast.success("Sync started! Reviews will be fetched shortly.");
     } catch (error) {
       console.error("Error syncing app:", error);
+      toast.error("Failed to sync reviews");
     } finally {
       setSyncingAppId(null);
     }

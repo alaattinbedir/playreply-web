@@ -55,6 +55,7 @@ import {
   type Review,
 } from "@/lib/api/reviews";
 import { getApps, type App } from "@/lib/api/apps";
+import { toast } from "sonner";
 
 // Star rating component
 function StarRating({ rating }: { rating: number }) {
@@ -182,6 +183,9 @@ export default function ReviewsPage() {
           : r
       ));
       setSelectedReview(null);
+      toast.success("Reply approved");
+    } else {
+      toast.error("Failed to approve reply");
     }
   };
 
@@ -210,6 +214,9 @@ export default function ReviewsPage() {
           : r
       ));
       setSelectedReview(null);
+      toast.success("Reply sent to Google Play");
+    } else {
+      toast.error("Failed to send reply");
     }
     setIsSending(false);
   };
@@ -225,6 +232,9 @@ export default function ReviewsPage() {
           : r
       ));
       setSelectedReview(null);
+      toast.success("Review ignored");
+    } else {
+      toast.error("Failed to ignore review");
     }
   };
 
@@ -235,6 +245,9 @@ export default function ReviewsPage() {
     const newReply = await regenerateReply(selectedReview.id);
     if (newReply) {
       setEditedReply(newReply);
+      toast.success("New reply generated");
+    } else {
+      toast.error("Failed to regenerate reply");
     }
     setIsRegenerating(false);
   };

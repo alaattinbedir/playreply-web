@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { PaddleProvider } from "@/components/paddle-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -35,8 +36,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
-        <Toaster />
+        <PaddleProvider>
+          {children}
+          <Toaster />
+        </PaddleProvider>
       </body>
     </html>
   );

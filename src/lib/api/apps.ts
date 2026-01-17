@@ -170,7 +170,7 @@ export async function addApp(params: AddAppParams): Promise<App | null> {
 
   // Trigger fetch-reviews workflow immediately for the new app
   // This runs in background - don't await to avoid blocking the UI
-  triggerFetchReviews().catch((err) => {
+  triggerFetchReviews(platform).catch((err) => {
     console.error("Error triggering fetch-reviews:", err);
   });
 
@@ -181,20 +181,23 @@ export async function addApp(params: AddAppParams): Promise<App | null> {
  * Triggers the fetch-reviews n8n workflow via webhook
  * This is called after adding a new app to immediately sync reviews
  */
-async function triggerFetchReviews(): Promise<void> {
+async function triggerFetchReviews(platform: "android" | "ios"): Promise<void> {
   const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "https://mobixo.app.n8n.cloud/webhook";
 
+  // Trigger the appropriate workflow based on platform
+  const endpoint = platform === "ios" ? "fetch-ios-reviews" : "fetch-reviews";
+
   try {
-    await fetch(`${webhookUrl}/fetch-reviews`, {
+    await fetch(`${webhookUrl}/${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ trigger: "app_added" }),
+      body: JSON.stringify({ trigger: "app_added", platform }),
     });
   } catch (error) {
     // Log but don't throw - this is a background operation
-    console.error("Failed to trigger fetch-reviews webhook:", error);
+    console.error(`Failed to trigger ${endpoint} webhook:`, error);
   }
 }
 

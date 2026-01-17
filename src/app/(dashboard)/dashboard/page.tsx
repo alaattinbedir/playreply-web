@@ -18,7 +18,6 @@ import {
   CheckCircle2,
   Sparkles,
   RefreshCw,
-  Loader2,
   Settings,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -282,12 +281,10 @@ export default function DashboardPage() {
             </div>
 
             {(() => {
-              // Step 2 logic: syncing → generating → pending → completed
-              const step2Completed = hasApprovedReplies && stats.pendingReplies === 0;
+              // Step 2 logic: completed when has approved replies, active when has apps
+              const step2Completed = hasApprovedReplies;
               const step2HasPending = stats.pendingReplies > 0;
-              const step2Syncing = plan.appsUsed > 0 && stats.totalReviews === 0;
-              const step2Generating = plan.appsUsed > 0 && stats.totalReviews > 0 && stats.pendingReplies === 0 && !hasApprovedReplies;
-              const step2Active = step2Completed || step2HasPending || step2Syncing || step2Generating;
+              const step2Active = plan.appsUsed > 0;
 
               return (
                 <div className={`flex items-center gap-4 p-4 border rounded-xl transition-colors ${
@@ -298,16 +295,14 @@ export default function DashboardPage() {
                     step2Completed ? 'bg-green-500 text-white' :
                     step2Active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                   }`}>
-                    {step2Completed ? <CheckCircle2 className="h-5 w-5" /> :
-                     (step2Syncing || step2Generating) ? <Loader2 className="h-5 w-5 animate-spin" /> : '2'}
+                    {step2Completed ? <CheckCircle2 className="h-5 w-5" /> : '2'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium">Review AI-generated replies</h4>
                     <p className="text-sm text-muted-foreground truncate">
-                      {step2Completed ? 'Great job! Replies reviewed and sent' :
-                       step2Syncing ? 'Syncing reviews from app store...' :
-                       step2Generating ? 'Generating AI replies for your reviews...' :
+                      {step2Completed && !step2HasPending ? 'Great job! Replies reviewed and sent' :
                        step2HasPending ? `${stats.pendingReplies} replies waiting for review` :
+                       step2Active ? 'Waiting for new reviews to generate replies' :
                        'Approve or edit replies before sending'}
                     </p>
                   </div>

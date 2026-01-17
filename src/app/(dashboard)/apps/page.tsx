@@ -424,15 +424,31 @@ export default function AppsPage() {
 
                   {/* Android API Access Info */}
                   {platform === "android" && (
-                    <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 p-4 space-y-2">
+                    <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 p-4 space-y-3">
                       <div className="flex items-center gap-2 text-sm font-medium text-blue-800 dark:text-blue-200">
                         <CheckCircle2 className="h-4 w-4 text-blue-500" />
                         Grant PlayReply Access
                       </div>
                       <p className="text-xs text-blue-700 dark:text-blue-300">
                         Add PlayReply&apos;s service account to your Google Play Console with &quot;Reply to reviews&quot; permission.
-                        See the setup guide below for the email address.
                       </p>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 px-2 py-1.5 bg-white dark:bg-blue-950 rounded text-xs font-mono text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800 truncate">
+                          playreplyservice@playreply.iam.gserviceaccount.com
+                        </code>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 shrink-0 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900"
+                          onClick={() => {
+                            navigator.clipboard.writeText("playreplyservice@playreply.iam.gserviceaccount.com");
+                            toast.success("Email copied to clipboard");
+                          }}
+                        >
+                          Copy
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -692,24 +708,22 @@ export default function AppsPage() {
                     <p className="text-sm text-muted-foreground mt-1">
                       PlayReply uses a shared service account to access your reviews.
                     </p>
-                    {process.env.NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
-                          {process.env.NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL}
-                        </code>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2"
-                          onClick={() => {
-                            navigator.clipboard.writeText(process.env.NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL || "");
-                            toast.success("Email copied to clipboard");
-                          }}
-                        >
-                          Copy
-                        </Button>
-                      </div>
-                    )}
+                    <div className="mt-2 flex items-center gap-2">
+                      <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
+                        playreplyservice@playreply.iam.gserviceaccount.com
+                      </code>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2"
+                        onClick={() => {
+                          navigator.clipboard.writeText("playreplyservice@playreply.iam.gserviceaccount.com");
+                          toast.success("Email copied to clipboard");
+                        }}
+                      >
+                        Copy
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">

@@ -5,6 +5,8 @@ export interface App {
   package_name: string;
   display_name: string | null;
   platform: "android" | "ios" | null;
+  apple_id: string | null;
+  bundle_id: string | null;
   created_at: string;
   user_id: string;
   settings?: AppSettings;
@@ -119,7 +121,15 @@ export async function getAppStats(appId: string): Promise<AppStats> {
   };
 }
 
-export async function addApp(packageName: string, displayName?: string): Promise<App | null> {
+export interface AddAppParams {
+  packageName: string;
+  displayName?: string;
+  platform: "android" | "ios";
+  appleId?: string; // Required for iOS - numeric App Store ID
+}
+
+export async function addApp(params: AddAppParams): Promise<App | null> {
+  const { packageName, displayName, platform, appleId } = params;
   const supabase = createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -131,6 +141,9 @@ export async function addApp(packageName: string, displayName?: string): Promise
     .insert({
       package_name: packageName,
       display_name: displayName || packageName.split(".").pop(),
+      platform,
+      apple_id: platform === "ios" ? appleId : null,
+      bundle_id: platform === "ios" ? packageName : null,
       user_id: user.id,
     })
     .select()

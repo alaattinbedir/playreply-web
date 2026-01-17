@@ -101,7 +101,9 @@ export default function AppsPage() {
   const [apps, setApps] = useState<App[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [platform, setPlatform] = useState<"android" | "ios">("android");
   const [packageName, setPackageName] = useState("");
+  const [appleId, setAppleId] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [syncingAppId, setSyncingAppId] = useState<string | null>(null);
@@ -183,13 +185,26 @@ export default function AppsPage() {
   const handleAddApp = async () => {
     if (!packageName.trim()) return;
 
+    // Validate Apple ID for iOS
+    if (platform === "ios" && !appleId.trim()) {
+      toast.error("Apple ID is required for iOS apps");
+      return;
+    }
+
     setIsAdding(true);
-    const newApp = await addApp(packageName.trim(), displayName.trim() || undefined);
+    const newApp = await addApp({
+      packageName: packageName.trim(),
+      displayName: displayName.trim() || undefined,
+      platform,
+      appleId: platform === "ios" ? appleId.trim() : undefined,
+    });
 
     if (newApp) {
       await loadData(); // Reload to get full app data with settings
       setPackageName("");
+      setAppleId("");
       setDisplayName("");
+      setPlatform("android");
       setIsAddDialogOpen(false);
       toast.success("App added successfully");
     } else {
@@ -294,16 +309,40 @@ export default function AppsPage() {
                   Add App
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-[480px]">
                 <DialogHeader>
                   <DialogTitle>Add New App</DialogTitle>
                   <DialogDescription>
-                    Enter your app&apos;s package name or bundle ID to connect it to PlayReply.
+                    Connect your Android or iOS app to start managing reviews.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
+                  {/* Platform Selector */}
                   <div className="space-y-2">
-                    <Label htmlFor="packageName">Package Name / Bundle ID</Label>
+                    <Label>Platform</Label>
+                    <Tabs value={platform} onValueChange={(v) => setPlatform(v as "android" | "ios")} className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="android" className="flex items-center gap-2">
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zm-4.97-5.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48C13.85 1.23 12.95 1 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C6.97 3.26 6 5.01 6 7h12c0-1.99-.97-3.75-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/>
+                          </svg>
+                          Android
+                        </TabsTrigger>
+                        <TabsTrigger value="ios" className="flex items-center gap-2">
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                          </svg>
+                          iOS
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
+
+                  {/* Package Name / Bundle ID */}
+                  <div className="space-y-2">
+                    <Label htmlFor="packageName">
+                      {platform === "ios" ? "Bundle ID" : "Package Name"}
+                    </Label>
                     <Input
                       id="packageName"
                       placeholder="com.example.myapp"
@@ -311,9 +350,30 @@ export default function AppsPage() {
                       onChange={(e) => setPackageName(e.target.value)}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Android: Find in Google Play Console • iOS: Find in App Store Connect
+                      {platform === "ios"
+                        ? "Find this in App Store Connect under App Information"
+                        : "Find this in Google Play Console under App Dashboard"
+                      }
                     </p>
                   </div>
+
+                  {/* Apple ID - iOS only */}
+                  {platform === "ios" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="appleId">Apple ID (App Store ID)</Label>
+                      <Input
+                        id="appleId"
+                        placeholder="123456789"
+                        value={appleId}
+                        onChange={(e) => setAppleId(e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        The numeric ID from your App Store URL (e.g., apps.apple.com/app/id<strong>123456789</strong>)
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Display Name */}
                   <div className="space-y-2">
                     <Label htmlFor="displayName">Display Name (optional)</Label>
                     <Input
@@ -323,14 +383,18 @@ export default function AppsPage() {
                       onChange={(e) => setDisplayName(e.target.value)}
                     />
                   </div>
+
+                  {/* API Access Info */}
                   <div className="rounded-lg bg-muted/50 p-4 space-y-2">
                     <div className="flex items-center gap-2 text-sm font-medium">
                       <AlertCircle className="h-4 w-4 text-amber-500" />
-                      API Access Required
+                      {platform === "ios" ? "App Store Connect API Key Required" : "Service Account Required"}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Android: Set up a Google Cloud Service Account with Play Console access.
-                      iOS: Create an App Store Connect API key.
+                      {platform === "ios"
+                        ? "Create an API key in App Store Connect with Admin or App Manager role."
+                        : "Set up a Google Cloud Service Account and grant it access in Play Console."
+                      }
                       <a href="#" className="text-primary hover:underline ml-1">
                         View setup guide
                       </a>
@@ -341,7 +405,10 @@ export default function AppsPage() {
                   <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={handleAddApp} disabled={!packageName.trim() || isAdding}>
+                  <Button
+                    onClick={handleAddApp}
+                    disabled={!packageName.trim() || (platform === "ios" && !appleId.trim()) || isAdding}
+                  >
                     {isAdding ? (
                       <>
                         <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -436,7 +503,7 @@ export default function AppsPage() {
                             <DropdownMenuItem asChild>
                               <a
                                 href={app.platform === "ios"
-                                  ? `https://apps.apple.com/app/id${app.package_name}`
+                                  ? `https://apps.apple.com/app/id${app.apple_id}`
                                   : `https://play.google.com/store/apps/details?id=${app.package_name}`
                                 }
                                 target="_blank"

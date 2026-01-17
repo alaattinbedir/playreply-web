@@ -21,13 +21,13 @@ export const PLANS = {
     price: 0,
     priceId: null, // Free plan doesn't need a price ID
     features: [
-      '1 app',
+      '2 apps',
       '50 AI replies per month',
       'Manual approval only',
       'Email support',
     ],
     limits: {
-      apps: 1,
+      apps: 2,
       repliesPerMonth: 50,
       teamMembers: 1,
     },
@@ -38,15 +38,15 @@ export const PLANS = {
     price: 29,
     priceId: process.env.NEXT_PUBLIC_PADDLE_STARTER_PRICE_ID || '',
     features: [
-      '3 apps',
-      '500 AI replies per month',
+      '6 apps',
+      '1,500 AI replies per month',
       'Auto-reply for 4-5 star reviews',
       'Priority email support',
       'Reply analytics',
     ],
     limits: {
-      apps: 3,
-      repliesPerMonth: 500,
+      apps: 6,
+      repliesPerMonth: 1500,
       teamMembers: 1,
     },
   },
@@ -57,8 +57,8 @@ export const PLANS = {
     priceId: process.env.NEXT_PUBLIC_PADDLE_PRO_PRICE_ID || '',
     popular: true,
     features: [
-      '10 apps',
-      '2,000 AI replies per month',
+      '20 apps',
+      '10,000 AI replies per month',
       'Auto-reply for all ratings',
       'Team access (3 members)',
       'Advanced analytics',
@@ -66,8 +66,8 @@ export const PLANS = {
       'Custom reply templates',
     ],
     limits: {
-      apps: 10,
-      repliesPerMonth: 2000,
+      apps: 20,
+      repliesPerMonth: 10000,
       teamMembers: 3,
     },
   },

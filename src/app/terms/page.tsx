@@ -59,8 +59,8 @@ export default function TermsPage() {
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
               <li>Free Plan: Limited features, 50 AI replies per month</li>
-              <li>Starter Plan ($29/month): 3 apps, 500 AI replies per month</li>
-              <li>Pro Plan ($99/month): 10 apps, 2,000 AI replies per month, team features</li>
+              <li>Starter Plan ($29/month): 6 apps, 1,500 AI replies per month</li>
+              <li>Pro Plan ($99/month): 20 apps, 10,000 AI replies per month, team features</li>
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-4">
               Payments are processed securely through Paddle. Subscriptions automatically renew unless

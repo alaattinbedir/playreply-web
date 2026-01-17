@@ -51,7 +51,7 @@ export function PricingSection() {
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-3">
-                {["1 app", "50 AI replies/month", "Manual approval only", "Basic analytics", "Community support"].map((feature, i) => (
+                {["2 apps", "50 AI replies/month", "Manual approval only", "Basic analytics", "Community support"].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
                     <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <Check className="h-3 w-3 text-primary" />
@@ -84,7 +84,7 @@ export function PricingSection() {
             </CardHeader>
             <CardContent className="relative space-y-4">
               <ul className="space-y-3">
-                {["3 apps", "500 AI replies/month", "Auto-approval rules", "Review classification", "Email support", "Priority queue"].map((feature, i) => (
+                {["6 apps", "1,500 AI replies/month", "Auto-approval rules", "Review classification", "Email support", "Priority queue"].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
                     <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                       <Check className="h-3 w-3 text-primary" />
@@ -117,7 +117,7 @@ export function PricingSection() {
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-3">
-                {["10 apps", "2,000 AI replies/month", "Team members (3 seats)", "Advanced analytics", "Priority support", "Custom templates"].map((feature, i) => (
+                {["20 apps", "10,000 AI replies/month", "Team members (3 seats)", "Advanced analytics", "Priority support", "Custom templates"].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
                     <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <Check className="h-3 w-3 text-primary" />

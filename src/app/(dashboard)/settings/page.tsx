@@ -331,10 +331,10 @@ export default function SettingsPage() {
                   </div>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> 3 apps
+                      <Check className="h-3 w-3 text-primary" /> 6 apps
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> 500 AI replies/month
+                      <Check className="h-3 w-3 text-primary" /> 1,500 AI replies/month
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-3 w-3 text-primary" /> Auto-approval rules
@@ -359,10 +359,10 @@ export default function SettingsPage() {
                   </div>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> 10 apps
+                      <Check className="h-3 w-3 text-primary" /> 20 apps
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> 2,000 AI replies/month
+                      <Check className="h-3 w-3 text-primary" /> 10,000 AI replies/month
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-3 w-3 text-primary" /> Team members (3 seats)

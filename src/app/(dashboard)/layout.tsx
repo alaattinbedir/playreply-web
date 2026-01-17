@@ -137,7 +137,7 @@ export default function DashboardLayout({
                     <span className="text-sm font-medium">Upgrade to Pro</span>
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">
-                    Get 10 apps, 2000 replies/month & more
+                    Get 20 apps, 10K replies/month & more
                   </p>
                   <Link href="/settings">
                     <Button size="sm" className="w-full">
@@ -257,7 +257,7 @@ export default function DashboardLayout({
                         <span className="text-sm font-medium">Upgrade to Pro</span>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">
-                        Get 10 apps, 2000 replies/month & more
+                        Get 20 apps, 10K replies/month & more
                       </p>
                       <SheetClose asChild>
                         <Link href="/settings">

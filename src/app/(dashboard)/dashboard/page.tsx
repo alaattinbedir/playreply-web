@@ -37,7 +37,7 @@ export default function DashboardPage() {
     repliesUsed: 0,
     repliesLimit: 50,
     appsUsed: 0,
-    appsLimit: 1,
+    appsLimit: 2,
   });
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);

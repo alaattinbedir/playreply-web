@@ -117,7 +117,7 @@ export default function AppsPage() {
   const [plan, setPlan] = useState({
     name: "Free",
     appsUsed: 0,
-    appsLimit: 1,
+    appsLimit: 2,
   });
 
   useEffect(() => {

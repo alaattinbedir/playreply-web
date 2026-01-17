@@ -186,7 +186,7 @@ export default function SettingsPage() {
     repliesUsed: planUsage?.repliesUsed || 0,
     repliesLimit: planUsage?.repliesLimit || 50,
     appsUsed: planUsage?.appsUsed || 0,
-    appsLimit: planUsage?.appsLimit || 1,
+    appsLimit: planUsage?.appsLimit || 2,
     nextBillingDate: null as string | null,
   };
 

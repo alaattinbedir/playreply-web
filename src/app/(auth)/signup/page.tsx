@@ -109,7 +109,7 @@ function SignupForm() {
           <ul className="text-sm text-muted-foreground space-y-1">
             <li className="flex items-center gap-2">
               <Check className="h-4 w-4 text-primary" />
-              1 app connected
+              2 apps connected (Android + iOS)
             </li>
             <li className="flex items-center gap-2">
               <Check className="h-4 w-4 text-primary" />

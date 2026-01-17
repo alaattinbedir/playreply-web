@@ -104,7 +104,7 @@ export async function getPlanUsage(): Promise<PlanUsage> {
     repliesUsed: repliesUsed || 0,
     repliesLimit: 50,
     appsUsed: appsUsed || 0,
-    appsLimit: 1,
+    appsLimit: 2, // 2 apps to support both Android & iOS versions
   };
 }
 

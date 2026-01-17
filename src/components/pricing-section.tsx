@@ -100,8 +100,8 @@ export function PricingSection() {
             <CardContent className="relative space-y-4">
               <ul className="space-y-3 text-sm">
                 {[
-                  { text: "3 apps", included: true },
-                  { text: "300 AI replies/month", included: true },
+                  { text: "4 apps", included: true },
+                  { text: "500 AI replies/month", included: true },
                   { text: "iOS + Android", included: true },
                   { text: "4-5 star auto-reply", included: true },
                   { text: "Analytics", included: false },
@@ -148,8 +148,8 @@ export function PricingSection() {
             <CardContent className="space-y-4">
               <ul className="space-y-3 text-sm">
                 {[
-                  { text: "10 apps", included: true },
-                  { text: "2,000 AI replies/month", included: true },
+                  { text: "12 apps", included: true },
+                  { text: "3,000 AI replies/month", included: true },
                   { text: "iOS + Android", included: true },
                   { text: "All ratings auto-reply", included: true },
                   { text: "Basic analytics", included: true },

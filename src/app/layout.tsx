@@ -83,14 +83,14 @@ const jsonLd = {
       name: "Starter Plan",
       price: "9",
       priceCurrency: "USD",
-      description: "3 apps, 300 AI replies/month, 4-5 star auto-reply",
+      description: "4 apps, 500 AI replies/month, 4-5 star auto-reply",
     },
     {
       "@type": "Offer",
       name: "Pro Plan",
       price: "29",
       priceCurrency: "USD",
-      description: "10 apps, 2,000 AI replies/month, all ratings auto-reply, basic analytics",
+      description: "12 apps, 3,000 AI replies/month, all ratings auto-reply, basic analytics",
     },
     {
       "@type": "Offer",

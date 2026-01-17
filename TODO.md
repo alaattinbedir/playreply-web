@@ -52,6 +52,26 @@
 
 ---
 
+## Paddle Subscription Integration (Pending Approval)
+
+### Plan Limits Enforcement
+- [ ] `src/lib/api/stats.ts` - Update `getPlanUsage()` to return limits based on user's subscription
+  - Currently returns hardcoded Free plan limits (2 apps, 50 replies)
+  - Need to query user's Paddle subscription status
+  - Return correct limits: Free (2/50), Starter (6/1500), Pro (20/10000)
+  - Use `PLANS` from `src/lib/paddle/config.ts` as source of truth
+
+### Reply Limit Enforcement
+- [ ] Add check before generating AI reply to verify user hasn't exceeded monthly limit
+- [ ] Show warning when approaching limit (80%, 90%, 100%)
+- [ ] Block reply generation when limit reached, prompt upgrade
+
+### App Limit Enforcement
+- [ ] Already implemented: `canAddApp = plan.appsUsed < plan.appsLimit`
+- [ ] Will work automatically once `getPlanUsage()` returns correct subscription limits
+
+---
+
 ## Future Enhancements
 
 ### Reviews Page

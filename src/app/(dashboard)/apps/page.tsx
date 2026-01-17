@@ -211,7 +211,25 @@ export default function AppsPage() {
       setDisplayName("");
       setPlatform("android");
       setIsAddDialogOpen(false);
-      toast.success("App added successfully");
+      toast.success("App added! Syncing reviews...");
+
+      // Poll for review updates (fetch-reviews runs in background)
+      const pollForReviews = async (attempts = 0) => {
+        if (attempts >= 10) return; // Max 10 attempts (30 seconds)
+
+        await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
+        const updatedApps = await getApps();
+        const updatedApp = updatedApps.find(a => a.id === newApp.id);
+
+        if (updatedApp && updatedApp.stats && updatedApp.stats.totalReviews > 0) {
+          setApps(updatedApps);
+          toast.success(`${updatedApp.stats.totalReviews} reviews synced!`);
+        } else {
+          pollForReviews(attempts + 1);
+        }
+      };
+
+      pollForReviews();
     } else {
       toast.error("Failed to add app");
     }

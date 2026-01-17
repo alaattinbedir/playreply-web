@@ -168,7 +168,34 @@ export async function addApp(params: AddAppParams): Promise<App | null> {
     console.error("Error creating app settings:", settingsError);
   }
 
+  // Trigger fetch-reviews workflow immediately for the new app
+  // This runs in background - don't await to avoid blocking the UI
+  triggerFetchReviews().catch((err) => {
+    console.error("Error triggering fetch-reviews:", err);
+  });
+
   return app;
+}
+
+/**
+ * Triggers the fetch-reviews n8n workflow via webhook
+ * This is called after adding a new app to immediately sync reviews
+ */
+async function triggerFetchReviews(): Promise<void> {
+  const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "https://mobixo.app.n8n.cloud/webhook";
+
+  try {
+    await fetch(`${webhookUrl}/fetch-reviews`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ trigger: "app_added" }),
+    });
+  } catch (error) {
+    // Log but don't throw - this is a background operation
+    console.error("Failed to trigger fetch-reviews webhook:", error);
+  }
 }
 
 export async function updateAppSettings(

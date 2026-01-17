@@ -592,9 +592,22 @@ export default function SettingsPage() {
                   <span className="text-muted-foreground">Private Key</span>
                   <Badge variant="secondary">
                     <Check className="h-3 w-3 mr-1" />
-                    Configured
+                    Encrypted
                   </Badge>
                 </div>
+              </div>
+
+              {/* Security info for configured credentials */}
+              <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-blue-800 dark:text-blue-200">
+                  <Shield className="h-4 w-4" />
+                  Security Information
+                </div>
+                <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
+                  <li>• Your private key is encrypted at rest and never shared</li>
+                  <li>• Used only to fetch reviews and post replies to App Store</li>
+                  <li>• You can revoke this key anytime from App Store Connect</li>
+                </ul>
               </div>
 
               <div className="flex gap-2 pt-2">
@@ -615,6 +628,20 @@ export default function SettingsPage() {
                   Remove
                 </Button>
               </div>
+
+              {/* Revoke instructions */}
+              <p className="text-xs text-muted-foreground">
+                To revoke access: Go to{" "}
+                <a
+                  href="https://appstoreconnect.apple.com/access/integrations/api"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  App Store Connect → API Keys
+                </a>
+                {" "}and click &quot;Revoke&quot; next to your key.
+              </p>
             </div>
           ) : (
             // No credentials configured
@@ -634,12 +661,48 @@ export default function SettingsPage() {
               <div className="rounded-lg bg-muted/50 p-4 space-y-3">
                 <h4 className="font-medium text-sm">How to get your credentials:</h4>
                 <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                  <li>Go to App Store Connect → Users and Access → Integrations</li>
+                  <li>
+                    Go to{" "}
+                    <a
+                      href="https://appstoreconnect.apple.com/access/integrations/api"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      App Store Connect → Users and Access → Integrations
+                    </a>
+                  </li>
                   <li>Select &quot;App Store Connect API&quot; → &quot;Team Keys&quot;</li>
-                  <li>Click &quot;+&quot; to generate a new key with Admin or App Manager role</li>
+                  <li>Click &quot;+&quot; to generate a new key with <strong>App Manager</strong> role (minimum required)</li>
                   <li>Download the .p8 private key file (can only be downloaded once!)</li>
                   <li>Note your Issuer ID and Key ID</li>
                 </ol>
+              </div>
+
+              {/* Security explanation */}
+              <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 p-4 space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-blue-800 dark:text-blue-200">
+                  <Shield className="h-4 w-4" />
+                  How We Protect Your Credentials
+                </div>
+                <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1.5">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-3 w-3 mt-0.5 shrink-0" />
+                    <span><strong>Encrypted storage:</strong> Your private key is encrypted at rest using industry-standard encryption</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-3 w-3 mt-0.5 shrink-0" />
+                    <span><strong>Secure transmission:</strong> All data is transmitted over TLS/SSL encrypted connections</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-3 w-3 mt-0.5 shrink-0" />
+                    <span><strong>Limited use:</strong> Credentials are only used to fetch reviews and post your approved replies</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-3 w-3 mt-0.5 shrink-0" />
+                    <span><strong>You stay in control:</strong> Revoke access anytime from App Store Connect</span>
+                  </li>
+                </ul>
               </div>
 
               <Button onClick={handleOpenIOSCredentialsDialog}>
@@ -751,11 +814,17 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-3">
-              <p className="text-xs text-amber-800 dark:text-amber-200">
-                <strong>Security Note:</strong> Your private key is stored securely and never shared.
-                It&apos;s used only to authenticate with the App Store Connect API.
-              </p>
+            {/* Security info in dialog */}
+            <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 p-3 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-medium text-blue-800 dark:text-blue-200">
+                <Shield className="h-3.5 w-3.5" />
+                Your Credentials Are Safe
+              </div>
+              <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
+                <li>• Encrypted at rest, transmitted over TLS/SSL</li>
+                <li>• Only used to sync reviews and post replies</li>
+                <li>• Revoke anytime from App Store Connect</li>
+              </ul>
             </div>
           </div>
 

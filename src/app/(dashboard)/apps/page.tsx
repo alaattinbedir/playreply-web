@@ -59,6 +59,43 @@ import { getApps, addApp, updateAppSettings, deleteApp, type App } from "@/lib/a
 import { getPlanUsage } from "@/lib/api/stats";
 import { toast } from "sonner";
 
+// Platform Icon Component
+function PlatformIcon({ platform }: { platform: "android" | "ios" | null }) {
+  if (!platform) return null;
+
+  if (platform === "ios") {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center justify-center h-5 w-5 rounded bg-gray-100 dark:bg-gray-800">
+            <svg className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>iOS App Store</p>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex items-center justify-center h-5 w-5 rounded bg-green-100 dark:bg-green-900/30">
+          <svg className="h-3.5 w-3.5 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.523 15.34c-.5.91-1.09 1.77-1.75 2.5-.86.94-1.57 1.59-2.11 1.95-.84.59-1.74.89-2.71.91-1.23 0-2.71-.35-4.43-1.06l-1.04-.43c-1.73-.71-3.12-1.07-4.18-1.07-.99.02-1.89.32-2.73.91-.54.36-1.25 1.01-2.11 1.95-.66.73-1.25 1.59-1.75 2.5-.51.93-.91 1.99-1.21 3.16-.28 1.17-.43 2.42-.43 3.75 0 2.08.45 3.73 1.35 4.97.9 1.23 2.1 1.85 3.62 1.85.91 0 2.01-.21 3.32-.63l1.04-.34c1.31-.42 2.41-.63 3.32-.63.91 0 2.01.21 3.32.63l1.04.34c1.31.42 2.41.63 3.32.63 1.52 0 2.72-.62 3.62-1.85.9-1.24 1.35-2.89 1.35-4.97 0-1.33-.15-2.58-.43-3.75-.3-1.17-.7-2.23-1.21-3.16zM12 0C7.09 0 3.24 3.95 3 9h18c-.24-5.05-4.09-9-9-9z"/>
+          </svg>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>Google Play Store</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 export default function AppsPage() {
   const [apps, setApps] = useState<App[]>([]);
   const [loading, setLoading] = useState(true);
@@ -372,7 +409,10 @@ export default function AppsPage() {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground mt-0.5">{app.package_name}</p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <PlatformIcon platform={app.platform} />
+                            <p className="text-sm text-muted-foreground">{app.package_name}</p>
+                          </div>
                         </div>
 
                         {/* Actions dropdown */}

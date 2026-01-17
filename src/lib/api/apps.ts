@@ -4,6 +4,7 @@ export interface App {
   id: string;
   package_name: string;
   display_name: string | null;
+  platform: "android" | "ios" | null;
   created_at: string;
   user_id: string;
   settings?: AppSettings;

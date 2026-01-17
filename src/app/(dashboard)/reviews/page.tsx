@@ -779,7 +779,6 @@ export default function ReviewsPage() {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <PlatformIcon platform={review.platform} />
                         <span className="font-medium">{review.author_name || "Anonymous"}</span>
                         <StarRating rating={review.rating} />
                         <StatusBadge status={review.status} />
@@ -794,6 +793,7 @@ export default function ReviewsPage() {
 
                       {review.reply ? (
                         <div className="flex items-center gap-2 mt-2">
+                          <PlatformIcon platform={review.platform} />
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Sparkles className="h-3 w-3" />
                             AI Reply
@@ -802,6 +802,7 @@ export default function ReviewsPage() {
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 mt-2">
+                          <PlatformIcon platform={review.platform} />
                           <Button
                             variant="outline"
                             size="sm"

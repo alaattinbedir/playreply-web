@@ -244,7 +244,7 @@ export default function DashboardPage() {
                 {plan.appsUsed > 0 ? <CheckCircle2 className="h-5 w-5" /> : '1'}
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-medium">Connect your Google Play Console</h4>
+                <h4 className="font-medium">Connect your app store account</h4>
                 <p className="text-sm text-muted-foreground truncate">
                   {plan.appsUsed > 0 ? `${plan.appsUsed} app connected` : 'Add your app to start fetching reviews'}
                 </p>

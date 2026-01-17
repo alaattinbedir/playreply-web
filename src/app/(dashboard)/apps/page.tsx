@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
@@ -279,7 +280,7 @@ export default function AppsPage() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Apps</h1>
             <p className="text-muted-foreground mt-1">
-              Manage your connected Google Play apps
+              Manage your connected Android and iOS apps
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -297,12 +298,12 @@ export default function AppsPage() {
                 <DialogHeader>
                   <DialogTitle>Add New App</DialogTitle>
                   <DialogDescription>
-                    Enter your app&apos;s package name to connect it to PlayReply.
+                    Enter your app&apos;s package name or bundle ID to connect it to PlayReply.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="packageName">Package Name</Label>
+                    <Label htmlFor="packageName">Package Name / Bundle ID</Label>
                     <Input
                       id="packageName"
                       placeholder="com.example.myapp"
@@ -310,7 +311,7 @@ export default function AppsPage() {
                       onChange={(e) => setPackageName(e.target.value)}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Find this in your Google Play Console under App Dashboard
+                      Android: Find in Google Play Console • iOS: Find in App Store Connect
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -325,11 +326,11 @@ export default function AppsPage() {
                   <div className="rounded-lg bg-muted/50 p-4 space-y-2">
                     <div className="flex items-center gap-2 text-sm font-medium">
                       <AlertCircle className="h-4 w-4 text-amber-500" />
-                      Service Account Required
+                      API Access Required
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      You&apos;ll need to set up a Google Cloud Service Account and grant it
-                      access to your app in Google Play Console.
+                      Android: Set up a Google Cloud Service Account with Play Console access.
+                      iOS: Create an App Store Connect API key.
                       <a href="#" className="text-primary hover:underline ml-1">
                         View setup guide
                       </a>
@@ -365,7 +366,7 @@ export default function AppsPage() {
               </div>
               <h3 className="text-xl font-semibold mb-2">No apps connected yet</h3>
               <p className="text-muted-foreground text-center max-w-md mb-6">
-                Connect your first Google Play app to start receiving AI-generated
+                Connect your first Android or iOS app to start receiving AI-generated
                 responses to your user reviews.
               </p>
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -434,12 +435,15 @@ export default function AppsPage() {
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                               <a
-                                href={`https://play.google.com/store/apps/details?id=${app.package_name}`}
+                                href={app.platform === "ios"
+                                  ? `https://apps.apple.com/app/id${app.package_name}`
+                                  : `https://play.google.com/store/apps/details?id=${app.package_name}`
+                                }
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
                                 <ExternalLink className="mr-2 h-4 w-4" />
-                                View on Play Store
+                                {app.platform === "ios" ? "View on App Store" : "View on Play Store"}
                               </a>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
@@ -537,43 +541,98 @@ export default function AppsPage() {
           <CardHeader>
             <CardTitle className="text-lg">Setup Guide</CardTitle>
             <CardDescription>
-              Follow these steps to connect your Google Play Console
+              Follow these steps to connect your app store account
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
-              <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-sm font-medium">
-                1
-              </div>
-              <div>
-                <h4 className="font-medium">Create a Google Cloud Service Account</h4>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Go to Google Cloud Console and create a new service account with JSON key.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
-              <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-sm font-medium">
-                2
-              </div>
-              <div>
-                <h4 className="font-medium">Grant Access in Play Console</h4>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Add the service account email to your Google Play Console with &quot;Reply to reviews&quot; permission.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
-              <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-sm font-medium">
-                3
-              </div>
-              <div>
-                <h4 className="font-medium">Add Your App</h4>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Enter your app&apos;s package name above and PlayReply will start syncing reviews.
-                </p>
-              </div>
-            </div>
+          <CardContent>
+            <Tabs defaultValue="android" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="android" className="flex items-center gap-2">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.523 15.34c-.5.91-1.09 1.77-1.75 2.5-.86.94-1.57 1.59-2.11 1.95-.84.59-1.74.89-2.71.91-1.23 0-2.71-.35-4.43-1.06l-1.04-.43c-1.73-.71-3.12-1.07-4.18-1.07-.99.02-1.89.32-2.73.91-.54.36-1.25 1.01-2.11 1.95-.66.73-1.25 1.59-1.75 2.5-.51.93-.91 1.99-1.21 3.16-.28 1.17-.43 2.42-.43 3.75 0 2.08.45 3.73 1.35 4.97.9 1.23 2.1 1.85 3.62 1.85.91 0 2.01-.21 3.32-.63l1.04-.34c1.31-.42 2.41-.63 3.32-.63.91 0 2.01.21 3.32.63l1.04.34c1.31.42 2.41.63 3.32.63 1.52 0 2.72-.62 3.62-1.85.9-1.24 1.35-2.89 1.35-4.97 0-1.33-.15-2.58-.43-3.75-.3-1.17-.7-2.23-1.21-3.16zM12 0C7.09 0 3.24 3.95 3 9h18c-.24-5.05-4.09-9-9-9z"/>
+                  </svg>
+                  Android
+                </TabsTrigger>
+                <TabsTrigger value="ios" className="flex items-center gap-2">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                  </svg>
+                  iOS
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="android" className="space-y-4">
+                <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
+                  <div className="h-8 w-8 rounded-full bg-green-600 text-white flex items-center justify-center shrink-0 text-sm font-medium">
+                    1
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Create a Google Cloud Service Account</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Go to Google Cloud Console and create a new service account with JSON key.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
+                  <div className="h-8 w-8 rounded-full bg-green-600 text-white flex items-center justify-center shrink-0 text-sm font-medium">
+                    2
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Grant Access in Play Console</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Add the service account email to your Google Play Console with &quot;Reply to reviews&quot; permission.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
+                  <div className="h-8 w-8 rounded-full bg-green-600 text-white flex items-center justify-center shrink-0 text-sm font-medium">
+                    3
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Add Your App</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Enter your app&apos;s package name above and PlayReply will start syncing reviews.
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="ios" className="space-y-4">
+                <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
+                  <div className="h-8 w-8 rounded-full bg-gray-800 text-white flex items-center justify-center shrink-0 text-sm font-medium">
+                    1
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Create an App Store Connect API Key</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Go to App Store Connect → Users and Access → Keys → App Store Connect API and generate a new key with Admin or App Manager role.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
+                  <div className="h-8 w-8 rounded-full bg-gray-800 text-white flex items-center justify-center shrink-0 text-sm font-medium">
+                    2
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Download Your Private Key</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Download the .p8 private key file and note your Key ID and Issuer ID. The key can only be downloaded once.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
+                  <div className="h-8 w-8 rounded-full bg-gray-800 text-white flex items-center justify-center shrink-0 text-sm font-medium">
+                    3
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Add Your App</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Enter your app&apos;s bundle ID above and PlayReply will start syncing reviews from the App Store.
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 

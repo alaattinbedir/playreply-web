@@ -253,6 +253,8 @@ export default function AppsPage() {
     try {
       const app = apps.find(a => a.id === appId);
       if (app) {
+        const initialReviewCount = app.stats?.totalReviews || 0;
+
         const response = await fetch("/api/n8n/sync", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -262,10 +264,32 @@ export default function AppsPage() {
         if (!response.ok) {
           throw new Error("Sync failed");
         }
+
+        // Reload data after sync
+        await loadData();
+        toast.success("Sync started! Fetching reviews...");
+
+        // Poll for review updates
+        const pollForReviews = async (attempts = 0) => {
+          if (attempts >= 10) return; // Max 10 attempts (30 seconds)
+
+          await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
+          const updatedApps = await getApps();
+          const updatedApp = updatedApps.find(a => a.id === appId);
+
+          if (updatedApp && updatedApp.stats) {
+            const newReviewCount = updatedApp.stats.totalReviews;
+            if (newReviewCount > initialReviewCount) {
+              setApps(updatedApps);
+              toast.success(`${newReviewCount - initialReviewCount} new reviews synced!`);
+              return;
+            }
+          }
+          pollForReviews(attempts + 1);
+        };
+
+        pollForReviews();
       }
-      // Reload data after sync
-      await loadData();
-      toast.success("Sync started! Reviews will be fetched shortly.");
     } catch (error) {
       console.error("Error syncing app:", error);
       toast.error("Failed to sync reviews");

@@ -256,7 +256,7 @@ export default function AppsPage() {
         const response = await fetch("/api/n8n/sync", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ package_name: app.package_name }),
+          body: JSON.stringify({ package_name: app.package_name, platform: app.platform }),
         });
 
         if (!response.ok) {

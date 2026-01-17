@@ -5,7 +5,7 @@ const N8N_WEBHOOK_BASE_URL = process.env.N8N_WEBHOOK_BASE_URL || "https://mobixo
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { package_name } = body;
+    const { package_name, platform } = body;
 
     if (!package_name) {
       return NextResponse.json(
@@ -14,10 +14,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const response = await fetch(`${N8N_WEBHOOK_BASE_URL}/fetch-reviews`, {
+    // Use correct workflow based on platform
+    const endpoint = platform === "ios" ? "fetch-ios-reviews" : "fetch-reviews";
+
+    const response = await fetch(`${N8N_WEBHOOK_BASE_URL}/${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ package_name }),
+      body: JSON.stringify({ package_name, platform }),
     });
 
     const data = await response.text();

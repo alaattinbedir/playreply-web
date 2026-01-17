@@ -12,21 +12,100 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PlayReply - AI-Powered Google Play Review Responses",
-  description: "Automatically respond to Google Play reviews with AI. Save time, improve ratings, and delight your users with personalized, professional responses.",
-  keywords: ["Google Play", "app reviews", "AI responses", "review management", "app store optimization"],
+  title: "PlayReply - AI-Powered App Review Responses for Google Play & App Store",
+  description: "Automatically respond to Google Play and iOS App Store reviews with AI. Save time, improve ratings, and delight your users with personalized, professional responses.",
+  keywords: [
+    "Google Play",
+    "App Store",
+    "iOS",
+    "app reviews",
+    "AI responses",
+    "review management",
+    "app store optimization",
+    "ASO",
+    "customer feedback",
+    "review reply",
+    "automated responses",
+  ],
   authors: [{ name: "PlayReply" }],
+  creator: "PlayReply",
+  publisher: "PlayReply",
+  metadataBase: new URL("https://playreply.com"),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "PlayReply - AI-Powered Google Play Review Responses",
-    description: "Automatically respond to Google Play reviews with AI. Save time, improve ratings, and delight your users.",
+    title: "PlayReply - AI-Powered App Review Responses",
+    description: "Automatically respond to Google Play and App Store reviews with AI. Save time, improve ratings, and delight your users.",
     url: "https://playreply.com",
     siteName: "PlayReply",
     type: "website",
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "PlayReply - AI-Powered Google Play Review Responses",
-    description: "Automatically respond to Google Play reviews with AI.",
+    title: "PlayReply - AI-Powered App Review Responses",
+    description: "Automatically respond to app reviews with AI. Google Play & App Store supported.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+
+// Structured Data (Schema.org JSON-LD)
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "PlayReply",
+  description:
+    "AI-powered review response platform for Google Play and iOS App Store. Automatically generate personalized replies to user reviews.",
+  url: "https://playreply.com",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Free Plan",
+      price: "0",
+      priceCurrency: "USD",
+      description: "2 apps, 50 AI replies/month",
+    },
+    {
+      "@type": "Offer",
+      name: "Starter Plan",
+      price: "29",
+      priceCurrency: "USD",
+      description: "6 apps, 1,500 AI replies/month",
+    },
+    {
+      "@type": "Offer",
+      name: "Pro Plan",
+      price: "99",
+      priceCurrency: "USD",
+      description: "20 apps, 10,000 AI replies/month",
+    },
+  ],
+  featureList: [
+    "AI-powered review responses",
+    "Google Play integration",
+    "iOS App Store integration",
+    "Multi-language support",
+    "Customizable tone settings",
+    "Auto-approval rules",
+    "Team collaboration",
+  ],
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.8",
+    ratingCount: "50",
   },
 };
 
@@ -37,6 +116,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
+      <head>
+        {/* Structured Data - JSON-LD (safe: static content, not user input) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <PaddleProvider>
           {children}

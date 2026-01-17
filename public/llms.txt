@@ -1,0 +1,59 @@
+# PlayReply
+
+> AI-powered review response platform for Google Play and iOS App Store
+
+PlayReply helps mobile app developers and businesses automatically respond to user reviews using artificial intelligence, saving time while maintaining personalized, professional communication with users.
+
+## What is PlayReply?
+
+PlayReply is a SaaS platform that:
+- Fetches reviews from Google Play Console and iOS App Store Connect
+- Generates personalized AI responses using Claude AI
+- Supports 5-tier tone customization based on star ratings (1-5 stars)
+- Offers auto-approval rules for streamlined workflow
+- Provides multi-language support with automatic language detection
+
+## Key Features
+
+- **AI-Powered Responses**: Generate contextually appropriate replies using advanced AI
+- **Multi-Platform Support**: Works with both Google Play and iOS App Store
+- **Customizable Tones**: Set different response tones for different star ratings
+- **Auto-Reply**: Automatically send approved responses based on your rules
+- **Dashboard Analytics**: Track review trends and response metrics
+- **Team Collaboration**: Invite team members to manage reviews together
+
+## Target Audience
+
+- Mobile app developers
+- App development agencies
+- Product managers
+- Customer support teams
+- Indie developers
+- Enterprise app teams
+
+## Pricing
+
+- **Free Plan**: 2 apps, 50 AI replies/month
+- **Starter Plan**: 6 apps, 1,500 AI replies/month - $29/month
+- **Pro Plan**: 20 apps, 10,000 AI replies/month - $99/month
+
+## Links
+
+- Homepage: https://playreply.com
+- Login: https://playreply.com/login
+- Sign Up: https://playreply.com/signup
+- Privacy Policy: https://playreply.com/privacy
+- Terms of Service: https://playreply.com/terms
+
+## Technical Details
+
+- Built with Next.js and React
+- Hosted on Vercel
+- Uses Supabase for backend
+- Integrates with Google Play Developer API
+- Integrates with App Store Connect API
+- AI powered by Anthropic Claude
+
+## Contact
+
+For support or inquiries, visit https://playreply.com

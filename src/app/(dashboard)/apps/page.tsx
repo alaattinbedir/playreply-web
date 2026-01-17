@@ -58,7 +58,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getApps, addApp, updateAppSettings, deleteApp, type App } from "@/lib/api/apps";
 import { getPlanUsage } from "@/lib/api/stats";
+import { hasIOSCredentials } from "@/lib/api/ios-credentials";
 import { toast } from "sonner";
+import Link from "next/link";
 
 // Platform Icon Component
 function PlatformIcon({ platform }: { platform: "android" | "ios" | null }) {
@@ -109,6 +111,7 @@ export default function AppsPage() {
   const [syncingAppId, setSyncingAppId] = useState<string | null>(null);
   const [settingsDialogApp, setSettingsDialogApp] = useState<App | null>(null);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [iosCredentialsConfigured, setIosCredentialsConfigured] = useState(false);
 
   // Plan info
   const [plan, setPlan] = useState({
@@ -123,11 +126,13 @@ export default function AppsPage() {
 
   const loadData = async () => {
     try {
-      const [appsData, planData] = await Promise.all([
+      const [appsData, planData, hasIosCreds] = await Promise.all([
         getApps(),
         getPlanUsage(),
+        hasIOSCredentials(),
       ]);
       setApps(appsData);
+      setIosCredentialsConfigured(hasIosCreds);
       setPlan({
         name: planData.name,
         appsUsed: planData.appsUsed,
@@ -384,22 +389,54 @@ export default function AppsPage() {
                     />
                   </div>
 
-                  {/* API Access Info */}
-                  <div className="rounded-lg bg-muted/50 p-4 space-y-2">
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                      <AlertCircle className="h-4 w-4 text-amber-500" />
-                      {platform === "ios" ? "App Store Connect API Key Required" : "Service Account Required"}
+                  {/* iOS Credentials Warning */}
+                  {platform === "ios" && !iosCredentialsConfigured && (
+                    <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-4 space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
+                        <AlertCircle className="h-4 w-4 text-amber-500" />
+                        Setup Required
+                      </div>
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        iOS apps require App Store Connect API credentials to sync reviews.
+                        You can add the app now and configure credentials later.
+                      </p>
+                      <Link
+                        href="/settings"
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+                      >
+                        Configure in Settings →
+                      </Link>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {platform === "ios"
-                        ? "Create an API key in App Store Connect with Admin or App Manager role."
-                        : "Set up a Google Cloud Service Account and grant it access in Play Console."
-                      }
-                      <a href="#" className="text-primary hover:underline ml-1">
-                        View setup guide
-                      </a>
-                    </p>
-                  </div>
+                  )}
+
+                  {/* iOS Credentials Configured */}
+                  {platform === "ios" && iosCredentialsConfigured && (
+                    <div className="rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 p-4">
+                      <div className="flex items-center gap-2 text-sm font-medium text-green-800 dark:text-green-200">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        iOS Credentials Configured
+                      </div>
+                      <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                        Your App Store Connect API is ready. Reviews will sync automatically.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Android API Access Info */}
+                  {platform === "android" && (
+                    <div className="rounded-lg bg-muted/50 p-4 space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium">
+                        <AlertCircle className="h-4 w-4 text-amber-500" />
+                        Service Account Required
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Set up a Google Cloud Service Account and grant it access in Play Console.
+                        <a href="#" className="text-primary hover:underline ml-1">
+                          View setup guide
+                        </a>
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
@@ -470,6 +507,11 @@ export default function AppsPage() {
                                 <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
                                 Syncing
                               </Badge>
+                            ) : app.platform === "ios" && !iosCredentialsConfigured ? (
+                              <Badge variant="outline" className="text-xs text-amber-600 border-amber-200 bg-amber-50">
+                                <AlertCircle className="h-3 w-3 mr-1" />
+                                Setup Required
+                              </Badge>
                             ) : (
                               <Badge variant="outline" className="text-xs text-green-600 border-green-200 bg-green-50">
                                 <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -524,6 +566,20 @@ export default function AppsPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
+
+                      {/* iOS Setup Required Banner */}
+                      {app.platform === "ios" && !iosCredentialsConfigured && (
+                        <div className="flex items-center justify-between gap-2 mt-3 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900">
+                          <p className="text-xs text-amber-700 dark:text-amber-300">
+                            Configure iOS credentials in Settings to sync reviews
+                          </p>
+                          <Link href="/settings">
+                            <Button variant="outline" size="sm" className="h-7 text-xs">
+                              Configure
+                            </Button>
+                          </Link>
+                        </div>
+                      )}
 
                       {/* Stats */}
                       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">

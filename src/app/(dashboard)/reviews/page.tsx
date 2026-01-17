@@ -189,32 +189,50 @@ export default function ReviewsPage() {
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const [generatingReplyId, setGeneratingReplyId] = useState<string | null>(null);
 
+  // Fetch data function
+  const fetchData = async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
+    try {
+      const [reviewsData, appsData, statsData] = await Promise.all([
+        getReviews({
+          status: filterStatus !== "all" ? filterStatus : undefined,
+          rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
+          appId: filterApp !== "all" ? filterApp : undefined,
+        }),
+        getApps(),
+        getReviewStats(),
+      ]);
+      setReviews(reviewsData);
+      setApps(appsData);
+      setStats(statsData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      if (showLoading) setIsLoading(false);
+    }
+  };
+
   // Fetch data on mount and when filters change
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const [reviewsData, appsData, statsData] = await Promise.all([
-          getReviews({
-            status: filterStatus !== "all" ? filterStatus : undefined,
-            rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
-            appId: filterApp !== "all" ? filterApp : undefined,
-          }),
-          getApps(),
-          getReviewStats(),
-        ]);
-        setReviews(reviewsData);
-        setApps(appsData);
-        setStats(statsData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
   }, [filterStatus, filterRating, filterApp]);
+
+  // Auto-refresh every 5 seconds for 30 seconds after mount (for workflow updates)
+  useEffect(() => {
+    let pollCount = 0;
+    const maxPolls = 6; // 6 polls * 5 seconds = 30 seconds
+
+    const pollInterval = setInterval(() => {
+      pollCount++;
+      if (pollCount >= maxPolls) {
+        clearInterval(pollInterval);
+        return;
+      }
+      fetchData(false); // Refresh without showing loading spinner
+    }, 5000);
+
+    return () => clearInterval(pollInterval);
+  }, []);
 
   const handleOpenReview = (review: Review) => {
     setSelectedReview(review);

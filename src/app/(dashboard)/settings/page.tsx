@@ -53,6 +53,15 @@ import {
   deleteIOSCredentials,
   type IOSCredentialsSummary,
 } from "@/lib/api/ios-credentials";
+import {
+  getReplySettings,
+  saveReplySettings,
+  POSITIVE_TONE_OPTIONS,
+  NEUTRAL_TONE_OPTIONS,
+  NEGATIVE_TONE_OPTIONS,
+  DEFAULT_REPLY_SETTINGS,
+  type UserReplySettings,
+} from "@/lib/api/reply-settings";
 import { toast } from "sonner";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -68,8 +77,14 @@ export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [weeklyReports, setWeeklyReports] = useState(true);
   const [newReviewAlerts, setNewReviewAlerts] = useState(true);
-  const [replyTone, setReplyTone] = useState("professional");
-  const [replyLanguage, setReplyLanguage] = useState("auto");
+
+  // 5-tier tone settings
+  const [tone5Star, setTone5Star] = useState(DEFAULT_REPLY_SETTINGS.tone_5_star);
+  const [tone4Star, setTone4Star] = useState(DEFAULT_REPLY_SETTINGS.tone_4_star);
+  const [tone3Star, setTone3Star] = useState(DEFAULT_REPLY_SETTINGS.tone_3_star);
+  const [tone2Star, setTone2Star] = useState(DEFAULT_REPLY_SETTINGS.tone_2_star);
+  const [tone1Star, setTone1Star] = useState(DEFAULT_REPLY_SETTINGS.tone_1_star);
+  const [isSavingToneSettings, setIsSavingToneSettings] = useState(false);
 
   // iOS Credentials state
   const [iosCredentials, setIosCredentials] = useState<IOSCredentialsSummary | null>(null);
@@ -85,14 +100,24 @@ export default function SettingsPage() {
       setIsLoading(true);
       try {
         const supabase = createClient();
-        const [{ data: { user } }, usage, iosCreds] = await Promise.all([
+        const [{ data: { user } }, usage, iosCreds, replySettings] = await Promise.all([
           supabase.auth.getUser(),
           getPlanUsage(),
           getIOSCredentials(),
+          getReplySettings(),
         ]);
         setUser(user);
         setPlanUsage(usage);
         setIosCredentials(iosCreds);
+
+        // Set tone settings from database or defaults
+        if (replySettings) {
+          setTone5Star(replySettings.tone_5_star);
+          setTone4Star(replySettings.tone_4_star);
+          setTone3Star(replySettings.tone_3_star);
+          setTone2Star(replySettings.tone_2_star);
+          setTone1Star(replySettings.tone_1_star);
+        }
       } catch (error) {
         console.error("Error fetching settings data:", error);
       } finally {
@@ -173,6 +198,25 @@ export default function SettingsPage() {
       toast.error("Failed to read file");
     };
     reader.readAsText(file);
+  };
+
+  // Save tone settings
+  const handleSaveToneSettings = async () => {
+    setIsSavingToneSettings(true);
+    const success = await saveReplySettings({
+      tone_5_star: tone5Star,
+      tone_4_star: tone4Star,
+      tone_3_star: tone3Star,
+      tone_2_star: tone2Star,
+      tone_1_star: tone1Star,
+    });
+
+    if (success) {
+      toast.success("AI reply settings saved");
+    } else {
+      toast.error("Failed to save AI reply settings");
+    }
+    setIsSavingToneSettings(false);
   };
 
   // Plan data from real usage
@@ -460,50 +504,154 @@ export default function SettingsPage() {
             <CardTitle>AI Reply Settings</CardTitle>
           </div>
           <CardDescription>
-            Customize how AI generates your replies
+            Configure the tone of AI-generated replies based on review rating.
+            Different tones work better for different types of reviews.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Info box */}
+          <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 p-4">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              <strong>How it works:</strong> The AI adapts its response style based on the review&apos;s star rating.
+              Positive reviews get an appreciative tone, while negative reviews get an empathetic, problem-solving approach.
+            </p>
+          </div>
+
+          {/* Reply Language - Static info */}
+          <div className="flex items-center gap-3 py-3 border-b">
+            <span className="text-lg">🌐</span>
+            <div>
+              <p className="font-medium text-sm">Reply Language</p>
+              <p className="text-sm text-muted-foreground">
+                Auto-detect — Replies are generated in the same language as the review
+              </p>
+            </div>
+          </div>
+
+          {/* 5-Star */}
           <div className="space-y-2">
-            <Label htmlFor="tone">Reply Tone</Label>
-            <Select value={replyTone} onValueChange={setReplyTone}>
-              <SelectTrigger className="max-w-md">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="tone-5" className="flex items-center gap-2">
+                <span className="text-yellow-500">★★★★★</span>
+                <span>5-Star Reviews</span>
+              </Label>
+            </div>
+            <Select value={tone5Star} onValueChange={setTone5Star}>
+              <SelectTrigger className="max-w-md" id="tone-5">
                 <SelectValue placeholder="Select tone" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="professional">Professional</SelectItem>
-                <SelectItem value="friendly">Friendly</SelectItem>
-                <SelectItem value="casual">Casual</SelectItem>
-                <SelectItem value="formal">Formal</SelectItem>
+                {POSITIVE_TONE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label} - {option.description}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
-              This affects the writing style of AI-generated replies
-            </p>
           </div>
+
+          {/* 4-Star */}
           <div className="space-y-2">
-            <Label htmlFor="language">Reply Language</Label>
-            <Select value={replyLanguage} onValueChange={setReplyLanguage}>
-              <SelectTrigger className="max-w-md">
-                <SelectValue placeholder="Select language" />
+            <div className="flex items-center gap-2">
+              <Label htmlFor="tone-4" className="flex items-center gap-2">
+                <span className="text-yellow-500">★★★★</span>
+                <span className="text-muted-foreground">☆</span>
+                <span>4-Star Reviews</span>
+              </Label>
+            </div>
+            <Select value={tone4Star} onValueChange={setTone4Star}>
+              <SelectTrigger className="max-w-md" id="tone-4">
+                <SelectValue placeholder="Select tone" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="auto">Auto-detect (match review language)</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="tr">Turkish</SelectItem>
-                <SelectItem value="de">German</SelectItem>
-                <SelectItem value="fr">French</SelectItem>
-                <SelectItem value="es">Spanish</SelectItem>
+                {POSITIVE_TONE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label} - {option.description}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
-              Language used for generating replies. Auto-detect will match the review language.
-            </p>
+          </div>
+
+          {/* 3-Star */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="tone-3" className="flex items-center gap-2">
+                <span className="text-yellow-500">★★★</span>
+                <span className="text-muted-foreground">☆☆</span>
+                <span>3-Star Reviews</span>
+              </Label>
+            </div>
+            <Select value={tone3Star} onValueChange={setTone3Star}>
+              <SelectTrigger className="max-w-md" id="tone-3">
+                <SelectValue placeholder="Select tone" />
+              </SelectTrigger>
+              <SelectContent>
+                {NEUTRAL_TONE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label} - {option.description}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 2-Star */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="tone-2" className="flex items-center gap-2">
+                <span className="text-yellow-500">★★</span>
+                <span className="text-muted-foreground">☆☆☆</span>
+                <span>2-Star Reviews</span>
+              </Label>
+            </div>
+            <Select value={tone2Star} onValueChange={setTone2Star}>
+              <SelectTrigger className="max-w-md" id="tone-2">
+                <SelectValue placeholder="Select tone" />
+              </SelectTrigger>
+              <SelectContent>
+                {NEGATIVE_TONE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label} - {option.description}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 1-Star */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="tone-1" className="flex items-center gap-2">
+                <span className="text-yellow-500">★</span>
+                <span className="text-muted-foreground">☆☆☆☆</span>
+                <span>1-Star Reviews</span>
+              </Label>
+            </div>
+            <Select value={tone1Star} onValueChange={setTone1Star}>
+              <SelectTrigger className="max-w-md" id="tone-1">
+                <SelectValue placeholder="Select tone" />
+              </SelectTrigger>
+              <SelectContent>
+                {NEGATIVE_TONE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label} - {option.description}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleSaveProfile} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save Preferences"}
+          <Button onClick={handleSaveToneSettings} disabled={isSavingToneSettings}>
+            {isSavingToneSettings ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Tone Settings"
+            )}
           </Button>
         </CardFooter>
       </Card>

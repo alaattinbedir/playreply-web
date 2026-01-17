@@ -366,62 +366,92 @@ export default function SettingsPage() {
           {!plan.isPro && (
             <div className="space-y-4">
               <h4 className="text-sm font-medium">Upgrade Your Plan</h4>
-              <div className="grid gap-4 md:grid-cols-2">
-                {/* Starter Plan */}
-                <div className="rounded-lg border p-4 space-y-3 hover:border-primary/50 transition-colors">
+              <div className="grid gap-4 md:grid-cols-3">
+                {/* Starter Plan - Popular */}
+                <div className="rounded-lg border border-primary p-4 space-y-3 bg-primary/5 relative">
+                  <Badge className="absolute -top-2 left-4">Popular</Badge>
                   <div className="flex items-center justify-between">
                     <h5 className="font-medium">Starter</h5>
-                    <span className="text-2xl font-bold">$29<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                    <span className="text-2xl font-bold">$9<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
                   </div>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> 6 apps
+                      <Check className="h-3 w-3 text-primary" /> 3 apps
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> 1,500 AI replies/month
+                      <Check className="h-3 w-3 text-primary" /> 300 AI replies/month
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> Auto-approval rules
+                      <Check className="h-3 w-3 text-primary" /> 4-5 star auto-reply
                     </li>
                   </ul>
                   <Button
                     className="w-full"
-                    variant="outline"
                     onClick={() => handleUpgrade("starter")}
                     disabled={isCheckoutLoading}
                   >
+                    <Zap className="h-4 w-4 mr-2" />
                     {isCheckoutLoading ? "Loading..." : "Upgrade to Starter"}
                   </Button>
                 </div>
 
                 {/* Pro Plan */}
-                <div className="rounded-lg border border-primary p-4 space-y-3 bg-primary/5 relative">
-                  <Badge className="absolute -top-2 left-4">Popular</Badge>
+                <div className="rounded-lg border p-4 space-y-3 hover:border-primary/50 transition-colors">
                   <div className="flex items-center justify-between">
                     <h5 className="font-medium">Pro</h5>
-                    <span className="text-2xl font-bold">$99<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                    <span className="text-2xl font-bold">$29<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
                   </div>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> 20 apps
+                      <Check className="h-3 w-3 text-primary" /> 10 apps
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="h-3 w-3 text-primary" /> 2,000 AI replies/month
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="h-3 w-3 text-primary" /> All ratings auto-reply
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="h-3 w-3 text-primary" /> 2 team members
+                    </li>
+                  </ul>
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => handleUpgrade("pro")}
+                    disabled={isCheckoutLoading}
+                  >
+                    {isCheckoutLoading ? "Loading..." : "Upgrade to Pro"}
+                  </Button>
+                </div>
+
+                {/* Studio Plan */}
+                <div className="rounded-lg border p-4 space-y-3 hover:border-primary/50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium">Studio</h5>
+                    <span className="text-2xl font-bold">$79<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                  </div>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li className="flex items-center gap-2">
+                      <Check className="h-3 w-3 text-primary" /> 30+ apps
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-3 w-3 text-primary" /> 10,000 AI replies/month
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> Team members (3 seats)
+                      <Check className="h-3 w-3 text-primary" /> Unlimited team
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> Advanced analytics
+                      <Check className="h-3 w-3 text-primary" /> Priority support
                     </li>
                   </ul>
                   <Button
                     className="w-full"
+                    variant="outline"
                     onClick={() => handleUpgrade("pro")}
                     disabled={isCheckoutLoading}
                   >
-                    <Zap className="h-4 w-4 mr-2" />
-                    {isCheckoutLoading ? "Loading..." : "Upgrade to Pro"}
+                    {isCheckoutLoading ? "Loading..." : "Contact Sales"}
                   </Button>
                 </div>
               </div>

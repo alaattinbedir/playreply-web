@@ -1,5 +1,21 @@
 # PlayReply TODO
 
+## Completed
+
+### Apps Page
+- [x] Add platform selector when adding new app (Android/iOS tabs)
+- [x] Show Apple ID field for iOS apps
+- [x] Platform icons in app list
+- [x] iOS credentials warning/success status
+- [x] "Setup Required" badge for iOS apps without credentials
+- [x] Updated Android setup guide with shared SA model
+- [x] Copy button for SA email
+
+### Settings
+- [x] iOS credentials management UI (Issuer ID, Key ID, Private Key)
+
+---
+
 ## iOS Platform Support - Remaining Tasks
 
 ### Meta & SEO Updates
@@ -26,15 +42,22 @@
 
 ---
 
-## Future Enhancements
+## Configuration (Completed)
 
-### Apps Page
-- [ ] Add platform selector when adding new app (Android/iOS dropdown)
-- [ ] Show Apple ID field for iOS apps
-- [ ] Platform-specific sync button behavior
+### Google Service Account Email
+- [x] Service Account email configured in `.env.local`:
+  ```
+  NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL=playreplyservice@playreply.iam.gserviceaccount.com
+  ```
+
+---
+
+## Future Enhancements
 
 ### Reviews Page
 - [ ] Platform filter in reviews list
+- [ ] Platform icon in review cards
 
-### Settings
-- [ ] iOS credentials management UI (API Key, Issuer ID, Key ID)
+### n8n Workflows
+- [ ] fetch-ios-reviews.json - Fetch reviews from App Store
+- [ ] send-ios-reply.json - Send replies to App Store

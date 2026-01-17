@@ -424,16 +424,14 @@ export default function AppsPage() {
 
                   {/* Android API Access Info */}
                   {platform === "android" && (
-                    <div className="rounded-lg bg-muted/50 p-4 space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium">
-                        <AlertCircle className="h-4 w-4 text-amber-500" />
-                        Service Account Required
+                    <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 p-4 space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-blue-800 dark:text-blue-200">
+                        <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                        Grant PlayReply Access
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Set up a Google Cloud Service Account and grant it access in Play Console.
-                        <a href="#" className="text-primary hover:underline ml-1">
-                          View setup guide
-                        </a>
+                      <p className="text-xs text-blue-700 dark:text-blue-300">
+                        Add PlayReply&apos;s service account to your Google Play Console with &quot;Reply to reviews&quot; permission.
+                        See the setup guide below for the email address.
                       </p>
                     </div>
                   )}
@@ -690,10 +688,28 @@ export default function AppsPage() {
                     1
                   </div>
                   <div>
-                    <h4 className="font-medium">Create a Google Cloud Service Account</h4>
+                    <h4 className="font-medium">Copy PlayReply Service Account Email</h4>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Go to Google Cloud Console and create a new service account with JSON key.
+                      PlayReply uses a shared service account to access your reviews.
                     </p>
+                    {process.env.NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
+                          {process.env.NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL}
+                        </code>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2"
+                          onClick={() => {
+                            navigator.clipboard.writeText(process.env.NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL || "");
+                            toast.success("Email copied to clipboard");
+                          }}
+                        >
+                          Copy
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
@@ -703,7 +719,8 @@ export default function AppsPage() {
                   <div>
                     <h4 className="font-medium">Grant Access in Play Console</h4>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Add the service account email to your Google Play Console with &quot;Reply to reviews&quot; permission.
+                      Go to <a href="https://play.google.com/console" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Play Console</a> → Users and Permissions → Invite new users.
+                      Add the service account email above with <strong>&quot;Reply to reviews&quot;</strong> permission for your app.
                     </p>
                   </div>
                 </div>
@@ -714,7 +731,7 @@ export default function AppsPage() {
                   <div>
                     <h4 className="font-medium">Add Your App</h4>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Enter your app&apos;s package name above and PlayReply will start syncing reviews.
+                      Enter your app&apos;s package name above and PlayReply will start syncing reviews automatically.
                     </p>
                   </div>
                 </div>

@@ -40,11 +40,8 @@ import {
   ExternalLink,
   Loader2,
   Key,
-  Eye,
-  EyeOff,
   Upload,
   CheckCircle2,
-  XCircle,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
@@ -82,7 +79,6 @@ export default function SettingsPage() {
   const [iosIssuerId, setIosIssuerId] = useState("");
   const [iosKeyId, setIosKeyId] = useState("");
   const [iosPrivateKey, setIosPrivateKey] = useState("");
-  const [showPrivateKey, setShowPrivateKey] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -761,8 +757,28 @@ export default function SettingsPage() {
 
             <div className="space-y-2">
               <Label htmlFor="private-key">Private Key (.p8 file)</Label>
-              <div className="space-y-2">
-                <div className="flex gap-2">
+              {iosPrivateKey ? (
+                // Private key loaded - show compact success state
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-green-200 bg-green-50 dark:bg-green-950/30 dark:border-green-900">
+                    <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-300">
+                      <Check className="h-4 w-4" />
+                      <span>Private key loaded ({iosPrivateKey.length} characters)</span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                      onClick={() => setIosPrivateKey("")}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                // No private key - show upload button and textarea
+                <div className="space-y-2">
                   <Button
                     type="button"
                     variant="outline"
@@ -779,39 +795,18 @@ export default function SettingsPage() {
                     className="hidden"
                     onChange={handlePrivateKeyFileUpload}
                   />
+                  <div className="relative">
+                    <p className="text-xs text-muted-foreground text-center py-1">or paste manually</p>
+                    <Textarea
+                      id="private-key"
+                      placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
+                      value={iosPrivateKey}
+                      onChange={(e) => setIosPrivateKey(e.target.value)}
+                      className="min-h-[80px] font-mono text-xs"
+                    />
+                  </div>
                 </div>
-                <div className="relative">
-                  <Textarea
-                    id="private-key"
-                    placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
-                    value={iosPrivateKey}
-                    onChange={(e) => setIosPrivateKey(e.target.value)}
-                    className={`min-h-[100px] font-mono text-xs ${!showPrivateKey ? "text-transparent select-none" : ""}`}
-                    style={!showPrivateKey ? { caretColor: "transparent" } : {}}
-                  />
-                  {iosPrivateKey && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-2 right-2"
-                      onClick={() => setShowPrivateKey(!showPrivateKey)}
-                    >
-                      {showPrivateKey ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
-                  )}
-                </div>
-                {iosPrivateKey && (
-                  <p className="text-xs text-green-600 flex items-center gap-1">
-                    <Check className="h-3 w-3" />
-                    Private key loaded ({iosPrivateKey.length} characters)
-                  </p>
-                )}
-              </div>
+              )}
             </div>
 
             {/* Security info in dialog */}

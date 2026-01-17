@@ -18,6 +18,8 @@ import {
   CheckCircle2,
   Sparkles,
   RefreshCw,
+  Loader2,
+  Settings,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getDashboardStats, getPlanUsage, getRecentActivity, type DashboardStats, type PlanUsage, type RecentActivity } from "@/lib/api/stats";
@@ -39,6 +41,8 @@ export default function DashboardPage() {
   });
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasAutoReplyEnabled, setHasAutoReplyEnabled] = useState(false);
+  const [hasApprovedReplies, setHasApprovedReplies] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -58,6 +62,24 @@ export default function DashboardPage() {
         setStats(statsData);
         setPlan(planData);
         setActivities(activityData);
+
+        // Check if any app has auto_reply_enabled
+        if (user) {
+          const { data: appSettings } = await supabase
+            .from("app_settings")
+            .select("auto_reply_enabled, app_id")
+            .eq("auto_reply_enabled", true);
+
+          setHasAutoReplyEnabled(!!(appSettings && appSettings.length > 0));
+
+          // Check if user has any approved or sent replies (step 2 completed)
+          const { count: approvedCount } = await supabase
+            .from("replies")
+            .select("*", { count: "exact", head: true })
+            .in("send_status", ["approved", "sent"]);
+
+          setHasApprovedReplies((approvedCount || 0) > 0);
+        }
       } catch (error) {
         console.error("Error loading dashboard data:", error);
       } finally {
@@ -259,36 +281,74 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div className={`flex items-center gap-4 p-4 border rounded-xl ${stats.pendingReplies > 0 ? '' : 'opacity-50'}`}>
-              <div className={`flex h-10 w-10 items-center justify-center rounded-full font-medium shrink-0 ${stats.pendingReplies > 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                2
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium">Review AI-generated replies</h4>
-                <p className="text-sm text-muted-foreground truncate">
-                  {stats.pendingReplies > 0 ? `${stats.pendingReplies} replies waiting` : 'Approve or edit replies before sending'}
-                </p>
-              </div>
-              {stats.pendingReplies > 0 && (
-                <Link href="/reviews?status=pending">
-                  <Button size="sm" variant="outline" className="shrink-0">
-                    Review
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              )}
-            </div>
+            {(() => {
+              // Step 2 logic: syncing → generating → pending → completed
+              const step2Completed = hasApprovedReplies && stats.pendingReplies === 0;
+              const step2HasPending = stats.pendingReplies > 0;
+              const step2Syncing = plan.appsUsed > 0 && stats.totalReviews === 0;
+              const step2Generating = plan.appsUsed > 0 && stats.totalReviews > 0 && stats.pendingReplies === 0 && !hasApprovedReplies;
+              const step2Active = step2Completed || step2HasPending || step2Syncing || step2Generating;
 
-            <div className="flex items-center gap-4 p-4 border rounded-xl opacity-50">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground font-medium shrink-0">
-                3
+              return (
+                <div className={`flex items-center gap-4 p-4 border rounded-xl transition-colors ${
+                  step2Completed ? 'bg-green-50 border-green-200' :
+                  step2Active ? '' : 'opacity-50'
+                }`}>
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-full font-medium shrink-0 ${
+                    step2Completed ? 'bg-green-500 text-white' :
+                    step2Active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {step2Completed ? <CheckCircle2 className="h-5 w-5" /> :
+                     (step2Syncing || step2Generating) ? <Loader2 className="h-5 w-5 animate-spin" /> : '2'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium">Review AI-generated replies</h4>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {step2Completed ? 'Great job! Replies reviewed and sent' :
+                       step2Syncing ? 'Syncing reviews from app store...' :
+                       step2Generating ? 'Generating AI replies for your reviews...' :
+                       step2HasPending ? `${stats.pendingReplies} replies waiting for review` :
+                       'Approve or edit replies before sending'}
+                    </p>
+                  </div>
+                  {step2HasPending && (
+                    <Link href="/reviews?status=pending">
+                      <Button size="sm" variant="outline" className="shrink-0">
+                        Review
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              );
+            })()}
+
+            <div className={`flex items-center gap-4 p-4 border rounded-xl transition-colors ${
+              hasAutoReplyEnabled ? 'bg-green-50 border-green-200' :
+              plan.appsUsed > 0 ? '' : 'opacity-50'
+            }`}>
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full font-medium shrink-0 ${
+                hasAutoReplyEnabled ? 'bg-green-500 text-white' :
+                plan.appsUsed > 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+              }`}>
+                {hasAutoReplyEnabled ? <CheckCircle2 className="h-5 w-5" /> : '3'}
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium">Set up auto-approval rules</h4>
                 <p className="text-sm text-muted-foreground truncate">
-                  Automatically send replies for positive reviews
+                  {hasAutoReplyEnabled
+                    ? 'Auto-reply enabled for positive reviews'
+                    : 'Automatically send replies for positive reviews'}
                 </p>
               </div>
+              {plan.appsUsed > 0 && !hasAutoReplyEnabled && (
+                <Link href="/apps">
+                  <Button size="sm" variant="outline" className="shrink-0">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Set Up
+                  </Button>
+                </Link>
+              )}
             </div>
           </CardContent>
         </Card>

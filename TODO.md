@@ -72,6 +72,46 @@
 
 ---
 
+## Notification System (Not Implemented)
+
+> ⚠️ Currently UI-only - switches don't save or trigger anything
+
+### Database
+- [ ] Create `user_settings` table for notification preferences
+  ```sql
+  CREATE TABLE user_settings (
+    user_id UUID PRIMARY KEY REFERENCES auth.users(id),
+    email_notifications BOOLEAN DEFAULT true,
+    new_review_alerts BOOLEAN DEFAULT true,
+    weekly_reports BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+  );
+  ```
+
+### Email Service Integration
+- [ ] Set up Resend (or SendGrid/AWS SES) for transactional emails
+- [ ] Create email templates:
+  - New review alert template
+  - Weekly report template
+  - Account notifications template
+
+### Backend API
+- [ ] `src/lib/api/user-settings.ts` - CRUD for notification preferences
+- [ ] Update `settings/page.tsx` to save preferences to database
+
+### n8n Notification Workflows
+- [ ] `new-review-notification.json` - Send email when new review arrives
+  - Trigger: After fetch-reviews inserts new review
+  - Check user's notification preferences
+  - Send email via Resend webhook
+- [ ] `weekly-report.json` - Weekly summary email
+  - Trigger: Cron (Monday 09:00)
+  - Aggregate stats per user
+  - Send personalized report
+
+---
+
 ## Future Enhancements
 
 ### Reviews Page

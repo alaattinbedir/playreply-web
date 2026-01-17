@@ -159,7 +159,7 @@ export async function addApp(params: AddAppParams): Promise<App | null> {
     .from("app_settings")
     .insert({
       app_id: app.id,
-      auto_reply_enabled: false,
+      auto_reply_enabled: true,  // Default to true for better onboarding - users can disable if needed
       auto_reply_min_rating: 4,
       language_mode: "same_as_review",
     });

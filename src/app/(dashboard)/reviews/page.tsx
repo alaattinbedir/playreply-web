@@ -871,8 +871,7 @@ export default function ReviewsPage() {
                       </span>
                     </div>
                     <div>
-                      <DialogTitle className="text-left flex items-center gap-2">
-                        <PlatformIcon platform={selectedReview.platform} />
+                      <DialogTitle className="text-left">
                         {selectedReview.author_name || "Anonymous"}
                       </DialogTitle>
                       <div className="flex items-center gap-2 mt-1">

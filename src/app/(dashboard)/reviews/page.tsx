@@ -217,10 +217,10 @@ export default function ReviewsPage() {
     fetchData();
   }, [filterStatus, filterRating, filterApp]);
 
-  // Auto-refresh every 5 seconds for 30 seconds after mount (for workflow updates)
+  // Auto-refresh every 5 seconds for 2 minutes after mount (for workflow updates)
   useEffect(() => {
     let pollCount = 0;
-    const maxPolls = 6; // 6 polls * 5 seconds = 30 seconds
+    const maxPolls = 24; // 24 polls * 5 seconds = 2 minutes
 
     const pollInterval = setInterval(() => {
       pollCount++;

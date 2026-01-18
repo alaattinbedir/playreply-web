@@ -141,6 +141,7 @@ export interface ResponseStats {
 export interface AppPerformance {
   appId: string;
   appName: string;
+  platform: "android" | "ios" | null;
   totalReviews: number;
   avgRating: number;
   responseRate: number;
@@ -300,7 +301,7 @@ export async function getAppPerformance(): Promise<AppPerformance[]> {
   // Get all apps
   const { data: apps } = await supabase
     .from("apps")
-    .select("id, display_name, package_name");
+    .select("id, display_name, package_name, platform");
 
   if (!apps) return [];
 
@@ -317,6 +318,7 @@ export async function getAppPerformance(): Promise<AppPerformance[]> {
       performance.push({
         appId: app.id,
         appName: app.display_name || app.package_name,
+        platform: app.platform as "android" | "ios" | null,
         totalReviews: 0,
         avgRating: 0,
         responseRate: 0,
@@ -333,6 +335,7 @@ export async function getAppPerformance(): Promise<AppPerformance[]> {
     performance.push({
       appId: app.id,
       appName: app.display_name || app.package_name,
+      platform: app.platform as "android" | "ios" | null,
       totalReviews: reviews.length,
       avgRating: Math.round(avgRating * 10) / 10,
       responseRate,

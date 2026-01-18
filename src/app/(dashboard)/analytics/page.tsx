@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
+  Tooltip as UITooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   BarChart,
   Bar,
   XAxis,
@@ -48,6 +54,54 @@ const COLORS = {
 };
 
 const PIE_COLORS = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#16a34a"];
+
+function PlatformIcon({ platform }: { platform: "android" | "ios" | null }) {
+  if (!platform) return null;
+
+  if (platform === "ios") {
+    return (
+      <TooltipProvider>
+        <UITooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-flex items-center justify-center h-5 w-5 rounded bg-gray-100 dark:bg-gray-800">
+              <svg
+                className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+              </svg>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>iOS App Store</p>
+          </TooltipContent>
+        </UITooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return (
+    <TooltipProvider>
+      <UITooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center justify-center h-5 w-5 rounded bg-green-100 dark:bg-green-900">
+            <svg
+              className="h-3.5 w-3.5 text-green-700 dark:text-green-300"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M17.523 15.341c-.5 0-.961-.173-1.345-.516l-3.069-2.744c-.077-.067-.168-.1-.273-.1h-1.672c-.104 0-.196.033-.273.1l-3.07 2.744a1.906 1.906 0 0 1-1.344.516A1.906 1.906 0 0 1 4.571 13.4c0-.5.173-.961.516-1.345l2.744-3.07a.396.396 0 0 0 .1-.272v-1.672a.396.396 0 0 0-.1-.273l-2.744-3.07a1.906 1.906 0 0 1-.516-1.344c0-.545.173-1.009.516-1.345a1.906 1.906 0 0 1 1.345-.516c.5 0 .961.173 1.345.516l3.069 2.744c.077.067.169.1.273.1h1.672c.104 0 .196-.033.273-.1l3.07-2.744A1.906 1.906 0 0 1 17.477.493c.545 0 1.009.173 1.345.516.343.336.516.8.516 1.345 0 .5-.173.961-.516 1.345l-2.744 3.069a.396.396 0 0 0-.1.273v1.672c0 .104.033.196.1.273l2.744 3.069c.343.384.516.845.516 1.345 0 .545-.173 1.009-.516 1.345a1.86 1.86 0 0 1-1.299.596zM6.477 17.571a1.906 1.906 0 0 1 1.345.516l3.069 2.744c.077.067.169.1.273.1h1.672c.104 0 .196-.033.273-.1l3.07-2.744a1.906 1.906 0 0 1 1.344-.516c.545 0 1.009.173 1.345.516.343.336.516.8.516 1.345 0 .5-.173.961-.516 1.345l-2.744 3.069a.396.396 0 0 0-.1.273v.672a.396.396 0 0 0 .1.273c.077.067.169.1.273.1h.672c.545 0 1.009.173 1.345.516.343.336.516.8.516 1.345 0 .545-.173 1.009-.516 1.345a1.906 1.906 0 0 1-1.345.516h-.672a.396.396 0 0 0-.273.1.396.396 0 0 0-.1.273v.672c0 .545-.173 1.009-.516 1.345a1.906 1.906 0 0 1-1.345.516 1.906 1.906 0 0 1-1.345-.516 1.906 1.906 0 0 1-.516-1.345v-.672a.396.396 0 0 0-.1-.273.396.396 0 0 0-.273-.1h-.672a1.906 1.906 0 0 1-1.345-.516 1.906 1.906 0 0 1-.516-1.345c0-.545.173-1.009.516-1.345a1.906 1.906 0 0 1 1.345-.516h.672c.104 0 .196-.033.273-.1a.396.396 0 0 0 .1-.273v-.672c0-.104-.033-.196-.1-.273l-2.744-3.069a1.906 1.906 0 0 1-.516-1.345c0-.545.173-1.009.516-1.345a1.906 1.906 0 0 1 1.299-.596z" />
+            </svg>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Google Play</p>
+        </TooltipContent>
+      </UITooltip>
+    </TooltipProvider>
+  );
+}
 
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
@@ -448,7 +502,12 @@ export default function AnalyticsPage() {
                       key={app.appId}
                       className="border-b last:border-0 hover:bg-muted/50 transition-colors"
                     >
-                      <td className="py-3 px-4 font-medium">{app.appName}</td>
+                      <td className="py-3 px-4 font-medium">
+                        <div className="flex items-center gap-2">
+                          <PlatformIcon platform={app.platform} />
+                          {app.appName}
+                        </div>
+                      </td>
                       <td className="text-center py-3 px-4">{app.totalReviews}</td>
                       <td className="text-center py-3 px-4">
                         <div className="flex items-center justify-center gap-1">

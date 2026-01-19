@@ -134,7 +134,7 @@ export default function Home() {
               {[
                 { value: "10K+", label: "Reviews Replied", icon: MessageSquare },
                 { value: "11", label: "Languages Supported", icon: Globe },
-                { value: "<2min", label: "Avg Response Time", icon: Clock },
+                { value: "Instant", label: "AI Replies", icon: Zap },
                 { value: "4.8", label: "User Satisfaction", icon: Star },
               ].map((stat, index) => (
                 <div key={index} className="relative group">

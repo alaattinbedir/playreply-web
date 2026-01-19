@@ -56,7 +56,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getApps, addApp, updateAppSettings, deleteApp, type App } from "@/lib/api/apps";
+import { getApps, addApp, updateAppSettings, deleteApp, fetchAndUpdateAppIcon, type App } from "@/lib/api/apps";
 import { getPlanUsage } from "@/lib/api/stats";
 import { hasIOSCredentials } from "@/lib/api/ios-credentials";
 import { toast } from "sonner";
@@ -205,6 +205,29 @@ export default function AppsPage() {
       }
     };
   }, [apps.length, isAutoSyncing, autoSyncAllApps]);
+
+  // Fetch icons for apps that don't have one
+  useEffect(() => {
+    const fetchMissingIcons = async () => {
+      const appsWithoutIcons = apps.filter(app => !app.icon_url && app.platform);
+
+      for (const app of appsWithoutIcons) {
+        const iconUrl = await fetchAndUpdateAppIcon(app);
+        if (iconUrl) {
+          // Update local state with the new icon
+          setApps(prevApps =>
+            prevApps.map(a =>
+              a.id === app.id ? { ...a, icon_url: iconUrl } : a
+            )
+          );
+        }
+      }
+    };
+
+    if (apps.length > 0) {
+      fetchMissingIcons();
+    }
+  }, [apps.length]); // Only run when apps count changes
 
   const loadData = async () => {
     try {
@@ -658,7 +681,19 @@ export default function AppsPage() {
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     {/* App icon */}
-                    <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0">
+                    {app.icon_url ? (
+                      <img
+                        src={app.icon_url}
+                        alt={app.display_name || app.package_name}
+                        className="h-14 w-14 rounded-xl object-cover shrink-0 shadow-sm"
+                        onError={(e) => {
+                          // Fallback to placeholder on error
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <div className={`h-14 w-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0 ${app.icon_url ? 'hidden' : ''}`}>
                       <AppWindow className="h-7 w-7 text-primary" />
                     </div>
 

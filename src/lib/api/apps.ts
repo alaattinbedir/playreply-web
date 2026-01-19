@@ -7,6 +7,7 @@ export interface App {
   platform: "android" | "ios" | null;
   apple_id: string | null;
   bundle_id: string | null;
+  icon_url: string | null;
   created_at: string;
   user_id: string;
   settings?: AppSettings;
@@ -135,6 +136,20 @@ export async function addApp(params: AddAppParams): Promise<App | null> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
+  // Fetch app icon from store
+  let iconUrl: string | null = null;
+  try {
+    const iconResponse = await fetch(
+      `/api/app-icon?packageName=${encodeURIComponent(packageName)}&platform=${platform}`
+    );
+    if (iconResponse.ok) {
+      const iconData = await iconResponse.json();
+      iconUrl = iconData.iconUrl;
+    }
+  } catch (error) {
+    console.error("Error fetching app icon:", error);
+  }
+
   // Insert the app
   const { data: app, error: appError } = await supabase
     .from("apps")
@@ -144,6 +159,7 @@ export async function addApp(params: AddAppParams): Promise<App | null> {
       platform,
       apple_id: platform === "ios" ? appleId : null,
       bundle_id: platform === "ios" ? packageName : null,
+      icon_url: iconUrl,
       user_id: user.id,
     })
     .select()
@@ -237,4 +253,48 @@ export async function deleteApp(appId: string): Promise<boolean> {
   }
 
   return true;
+}
+
+/**
+ * Update app's icon URL
+ */
+export async function updateAppIcon(appId: string, iconUrl: string): Promise<boolean> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("apps")
+    .update({ icon_url: iconUrl })
+    .eq("id", appId);
+
+  if (error) {
+    console.error("Error updating app icon:", error);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Fetch and update icon for an app that doesn't have one
+ */
+export async function fetchAndUpdateAppIcon(app: App): Promise<string | null> {
+  if (!app.package_name || !app.platform) return null;
+
+  try {
+    const iconResponse = await fetch(
+      `/api/app-icon?packageName=${encodeURIComponent(app.package_name)}&platform=${app.platform}`
+    );
+
+    if (iconResponse.ok) {
+      const iconData = await iconResponse.json();
+      if (iconData.iconUrl) {
+        await updateAppIcon(app.id, iconData.iconUrl);
+        return iconData.iconUrl;
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching app icon:", error);
+  }
+
+  return null;
 }

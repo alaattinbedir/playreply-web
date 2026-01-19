@@ -227,6 +227,8 @@ export default function ReviewsPage() {
     const newCount = reviews.filter((r) => r.status === "new").length;
     // Pending Approval = reviews with draft replies (not yet approved)
     const pendingCount = reviews.filter((r) => r.reply?.send_status === "draft").length;
+    // Ready to Send = reviews with approved replies (waiting to be sent)
+    const approvedCount = reviews.filter((r) => r.reply?.send_status === "approved").length;
     const repliedCount = reviews.filter((r) => r.status === "replied").length;
     const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
     const avgRating = reviews.length > 0 ? totalRating / reviews.length : 0;
@@ -235,6 +237,7 @@ export default function ReviewsPage() {
       total: reviews.length,
       new: newCount,
       pending: pendingCount,
+      approved: approvedCount,
       replied: repliedCount,
       avgRating,
     };
@@ -1078,7 +1081,7 @@ export default function ReviewsPage() {
                 Showing stats for filtered results ({filteredStats.total} reviews)
               </p>
             )}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold">
@@ -1097,7 +1100,15 @@ export default function ReviewsPage() {
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {filteredStats?.approved ?? stats?.approved ?? 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Ready to Send</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-green-600">
                     {filteredStats?.replied ?? stats?.replied ?? 0}
                   </div>
                   <div className="text-xs text-muted-foreground">Replied</div>

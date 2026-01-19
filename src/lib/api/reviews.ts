@@ -363,6 +363,7 @@ export async function getReviewStats(): Promise<{
   total: number;
   new: number;
   pending: number;
+  approved: number;
   replied: number;
   avgRating: number;
 }> {
@@ -377,10 +378,17 @@ export async function getReviewStats(): Promise<{
     .select("*", { count: "exact", head: true })
     .eq("status", "new");
 
+  // Pending Approval = replies with draft status
   const { count: pending } = await supabase
-    .from("reviews")
+    .from("replies")
     .select("*", { count: "exact", head: true })
-    .eq("status", "pending");
+    .eq("send_status", "draft");
+
+  // Ready to Send = replies with approved status
+  const { count: approved } = await supabase
+    .from("replies")
+    .select("*", { count: "exact", head: true })
+    .eq("send_status", "approved");
 
   const { count: replied } = await supabase
     .from("reviews")
@@ -399,6 +407,7 @@ export async function getReviewStats(): Promise<{
     total: total || 0,
     new: newCount || 0,
     pending: pending || 0,
+    approved: approved || 0,
     replied: replied || 0,
     avgRating,
   };

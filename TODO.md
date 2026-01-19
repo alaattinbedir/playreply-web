@@ -49,21 +49,38 @@
 
 ---
 
-## Paddle Subscription Integration (Pending Approval)
+## Paddle Subscription Integration (Pending Production Approval)
 
-### Plan Limits Enforcement
+### Completed
+- [x] Paddle account created and products configured
+- [x] Monthly pricing: Starter $9, Pro $29, Studio $79
+- [x] Yearly pricing with 33% discount (4 months FREE):
+  - Starter: $69/yr ($5.75/mo)
+  - Pro: $229/yr ($19/mo)
+  - Studio: $629/yr ($52/mo)
+- [x] Monthly/Yearly toggle UI in Settings page
+- [x] "4 months FREE" badge on yearly option
+- [x] Checkout integration with Paddle.js
+- [x] Webhook endpoint for subscription events
+- [x] Sandbox environment configured and tested
+- [x] Production environment variables in Vercel
+
+### Waiting for Paddle Production Approval
+- [ ] Test checkout flow on playreply.com
+- [ ] Test webhook subscription events
+
+### Plan Limits Enforcement (Post-Launch)
 - [ ] `src/lib/api/stats.ts` - Update `getPlanUsage()` to return limits based on user's subscription
   - Currently returns hardcoded Free plan limits (2 apps, 50 replies)
   - Need to query user's Paddle subscription status
-  - Return correct limits: Free (2/50), Starter (6/1500), Pro (20/10000)
-  - Use `PLANS` from `src/lib/paddle/config.ts` as source of truth
+  - Return correct limits based on `PLANS` from `src/lib/paddle/config.ts`
 
-### Reply Limit Enforcement
+### Reply Limit Enforcement (Post-Launch)
 - [ ] Add check before generating AI reply to verify user hasn't exceeded monthly limit
 - [ ] Show warning when approaching limit (80%, 90%, 100%)
 - [ ] Block reply generation when limit reached, prompt upgrade
 
-### App Limit Enforcement
+### App Limit Enforcement (Post-Launch)
 - [ ] Already implemented: `canAddApp = plan.appsUsed < plan.appsLimit`
 - [ ] Will work automatically once `getPlanUsage()` returns correct subscription limits
 
@@ -80,12 +97,12 @@
 
 ### Email Service Integration
 - [x] Email templates created (inline HTML in n8n workflows)
-- [ ] **ACTION REQUIRED**: Set up Resend account and add API key to n8n
-  1. Go to https://resend.com and create account
-  2. Get API key from dashboard
-  3. Add domain verification for `playreply.com`
-  4. Create "Header Auth" credential in n8n with name "Resend API Key"
-  5. Update workflows to use the new credential
+- [x] Resend email service configured:
+  1. ✅ Resend account created
+  2. ✅ API key obtained (mobixo-key, Full Access)
+  3. ✅ Domain verification for `playreply.com` (DNS records in Namecheap)
+  4. ✅ "Resend API Key" Header Auth credential created in n8n
+  5. ✅ Workflows activated and tested successfully
 
 ### n8n Notification Workflows
 - [x] `new-review-notification.json` - Webhook-triggered email alerts (ID: aA5uGo92DiBCLc7l)

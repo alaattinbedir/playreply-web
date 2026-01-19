@@ -12,14 +12,29 @@ export const PADDLE_CONFIG = {
   webhookSecret: process.env.PADDLE_WEBHOOK_SECRET || '',
 };
 
+// Billing interval type
+export type BillingInterval = 'monthly' | 'yearly';
+
+// Yearly discount percentage (2 months free = ~17%)
+export const YEARLY_DISCOUNT_PERCENT = 17;
+
 // Plan definitions with Paddle Price IDs
 // Update these after creating products in Paddle Dashboard
 export const PLANS = {
   free: {
     name: 'Free',
     description: 'Perfect for trying out PlayReply',
-    price: 0,
-    priceId: null, // Free plan doesn't need a price ID
+    pricing: {
+      monthly: {
+        price: 0,
+        priceId: null, // Free plan doesn't need a price ID
+      },
+      yearly: {
+        price: 0,
+        priceId: null,
+        monthlyEquivalent: 0,
+      },
+    },
     features: [
       '2 apps',
       '50 AI replies per month',
@@ -37,9 +52,18 @@ export const PLANS = {
   starter: {
     name: 'Starter',
     description: 'For indie developers',
-    price: 9,
-    priceId: process.env.NEXT_PUBLIC_PADDLE_STARTER_PRICE_ID || '',
     popular: true,
+    pricing: {
+      monthly: {
+        price: 9,
+        priceId: process.env.NEXT_PUBLIC_PADDLE_STARTER_PRICE_ID || '',
+      },
+      yearly: {
+        price: 90, // $9 × 10 months (2 months free)
+        priceId: process.env.NEXT_PUBLIC_PADDLE_STARTER_YEARLY_PRICE_ID || '',
+        monthlyEquivalent: 7.5,
+      },
+    },
     features: [
       '4 apps',
       '500 AI replies per month',
@@ -59,8 +83,17 @@ export const PLANS = {
   pro: {
     name: 'Pro',
     description: 'For growing app businesses',
-    price: 29,
-    priceId: process.env.NEXT_PUBLIC_PADDLE_PRO_PRICE_ID || '',
+    pricing: {
+      monthly: {
+        price: 29,
+        priceId: process.env.NEXT_PUBLIC_PADDLE_PRO_PRICE_ID || '',
+      },
+      yearly: {
+        price: 290, // $29 × 10 months (2 months free)
+        priceId: process.env.NEXT_PUBLIC_PADDLE_PRO_YEARLY_PRICE_ID || '',
+        monthlyEquivalent: 24.17,
+      },
+    },
     features: [
       '12 apps',
       '3,000 AI replies per month',
@@ -81,8 +114,17 @@ export const PLANS = {
   studio: {
     name: 'Studio',
     description: 'For agencies and large teams',
-    price: 79,
-    priceId: process.env.NEXT_PUBLIC_PADDLE_STUDIO_PRICE_ID || '',
+    pricing: {
+      monthly: {
+        price: 79,
+        priceId: process.env.NEXT_PUBLIC_PADDLE_STUDIO_PRICE_ID || '',
+      },
+      yearly: {
+        price: 790, // $79 × 10 months (2 months free)
+        priceId: process.env.NEXT_PUBLIC_PADDLE_STUDIO_YEARLY_PRICE_ID || '',
+        monthlyEquivalent: 65.83,
+      },
+    },
     features: [
       '30+ apps',
       '10,000 AI replies per month',
@@ -106,3 +148,9 @@ export const PLANS = {
 } as const;
 
 export type PlanType = keyof typeof PLANS;
+
+// Helper to get price for a plan and interval
+export function getPlanPrice(plan: PlanType, interval: BillingInterval) {
+  const planData = PLANS[plan];
+  return planData.pricing[interval];
+}

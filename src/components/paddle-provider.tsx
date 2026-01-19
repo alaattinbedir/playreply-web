@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Paddle } from '@paddle/paddle-js';
 import { getPaddle, openCheckout, CheckoutOptions } from '@/lib/paddle/client';
-import { PLANS, PlanType } from '@/lib/paddle/config';
+import { PLANS, PlanType, BillingInterval } from '@/lib/paddle/config';
 
 interface PaddleContextType {
   paddle: Paddle | null;
@@ -63,7 +63,7 @@ export function usePaddle() {
 export function useCheckout() {
   const { checkout, isLoading } = usePaddle();
 
-  const startCheckout = async (plan: PlanType, email?: string) => {
+  const startCheckout = async (plan: PlanType, email?: string, interval: BillingInterval = 'monthly') => {
     if (plan === 'free') {
       // Redirect to signup for free plan
       window.location.href = '/signup';
@@ -72,8 +72,9 @@ export function useCheckout() {
 
     await checkout({
       plan,
+      interval,
       email,
-      successUrl: `${window.location.origin}/dashboard?subscription=success&plan=${plan}`,
+      successUrl: `${window.location.origin}/dashboard?subscription=success&plan=${plan}&interval=${interval}`,
     });
   };
 

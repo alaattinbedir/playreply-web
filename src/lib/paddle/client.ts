@@ -1,7 +1,7 @@
 'use client';
 
 import { initializePaddle, Paddle } from '@paddle/paddle-js';
-import { PADDLE_CONFIG, PLANS, PlanType } from './config';
+import { PADDLE_CONFIG, PLANS, PlanType, BillingInterval, getPlanPrice } from './config';
 
 let paddleInstance: Paddle | null = null;
 
@@ -30,6 +30,7 @@ export async function getPaddle(): Promise<Paddle | null> {
 
 export interface CheckoutOptions {
   plan: PlanType;
+  interval?: BillingInterval;
   email?: string;
   customerId?: string;
   successUrl?: string;
@@ -41,16 +42,19 @@ export async function openCheckout(options: CheckoutOptions): Promise<void> {
     throw new Error('Paddle not initialized');
   }
 
-  const plan = PLANS[options.plan];
-  if (!plan.priceId) {
+  const interval = options.interval || 'monthly';
+  const priceInfo = getPlanPrice(options.plan, interval);
+
+  if (!priceInfo.priceId) {
     throw new Error('This plan does not require payment');
   }
 
   paddle.Checkout.open({
-    items: [{ priceId: plan.priceId, quantity: 1 }],
+    items: [{ priceId: priceInfo.priceId, quantity: 1 }],
     customer: options.email ? { email: options.email } : undefined,
     customData: {
       plan: options.plan,
+      interval: interval,
     },
     settings: {
       successUrl: options.successUrl || `${window.location.origin}/dashboard?subscription=success`,

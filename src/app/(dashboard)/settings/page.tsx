@@ -69,6 +69,7 @@ import {
 } from "@/lib/api/notification-settings";
 import { toast } from "sonner";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { BillingInterval, PLANS, YEARLY_DISCOUNT_PERCENT } from "@/lib/paddle/config";
 
 export default function SettingsPage() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -77,6 +78,9 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { startCheckout, isLoading: isCheckoutLoading } = useCheckout();
+
+  // Billing interval state
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
 
   // Notification settings state
   const [emailNotifications, setEmailNotifications] = useState(DEFAULT_NOTIFICATION_SETTINGS.email_notifications);
@@ -269,9 +273,9 @@ export default function SettingsPage() {
     toast.success("Settings saved");
   };
 
-  const handleUpgrade = async (planType: "starter" | "pro") => {
+  const handleUpgrade = async (planType: "starter" | "pro" | "studio") => {
     try {
-      await startCheckout(planType);
+      await startCheckout(planType, undefined, billingInterval);
     } catch (error) {
       console.error("Checkout error:", error);
       toast.error("Failed to start checkout");
@@ -396,14 +400,51 @@ export default function SettingsPage() {
           {/* Plan comparison / upgrade */}
           {!plan.isPro && (
             <div className="space-y-4">
-              <h4 className="text-sm font-medium">Upgrade Your Plan</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Upgrade Your Plan</h4>
+                {/* Billing interval toggle */}
+                <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
+                  <button
+                    onClick={() => setBillingInterval('monthly')}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                      billingInterval === 'monthly'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setBillingInterval('yearly')}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+                      billingInterval === 'yearly'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Yearly
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                      Save {YEARLY_DISCOUNT_PERCENT}%
+                    </Badge>
+                  </button>
+                </div>
+              </div>
               <div className="grid gap-4 md:grid-cols-3">
                 {/* Starter Plan - Popular */}
                 <div className="rounded-lg border border-primary p-4 space-y-3 bg-primary/5 relative">
                   <Badge className="absolute -top-2 left-4">Popular</Badge>
                   <div className="flex items-center justify-between">
                     <h5 className="font-medium">Starter</h5>
-                    <span className="text-2xl font-bold">$9<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                    <div className="text-right">
+                      {billingInterval === 'yearly' ? (
+                        <>
+                          <span className="text-2xl font-bold">${PLANS.starter.pricing.yearly.monthlyEquivalent.toFixed(0)}<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                          <p className="text-xs text-muted-foreground">billed ${PLANS.starter.pricing.yearly.price}/yr</p>
+                        </>
+                      ) : (
+                        <span className="text-2xl font-bold">${PLANS.starter.pricing.monthly.price}<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                      )}
+                    </div>
                   </div>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li className="flex items-center gap-2">
@@ -430,7 +471,16 @@ export default function SettingsPage() {
                 <div className="rounded-lg border p-4 space-y-3 hover:border-primary/50 transition-colors">
                   <div className="flex items-center justify-between">
                     <h5 className="font-medium">Pro</h5>
-                    <span className="text-2xl font-bold">$29<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                    <div className="text-right">
+                      {billingInterval === 'yearly' ? (
+                        <>
+                          <span className="text-2xl font-bold">${PLANS.pro.pricing.yearly.monthlyEquivalent.toFixed(0)}<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                          <p className="text-xs text-muted-foreground">billed ${PLANS.pro.pricing.yearly.price}/yr</p>
+                        </>
+                      ) : (
+                        <span className="text-2xl font-bold">${PLANS.pro.pricing.monthly.price}<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                      )}
+                    </div>
                   </div>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li className="flex items-center gap-2">
@@ -460,7 +510,16 @@ export default function SettingsPage() {
                 <div className="rounded-lg border p-4 space-y-3 hover:border-primary/50 transition-colors">
                   <div className="flex items-center justify-between">
                     <h5 className="font-medium">Studio</h5>
-                    <span className="text-2xl font-bold">$79<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                    <div className="text-right">
+                      {billingInterval === 'yearly' ? (
+                        <>
+                          <span className="text-2xl font-bold">${PLANS.studio.pricing.yearly.monthlyEquivalent.toFixed(0)}<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                          <p className="text-xs text-muted-foreground">billed ${PLANS.studio.pricing.yearly.price}/yr</p>
+                        </>
+                      ) : (
+                        <span className="text-2xl font-bold">${PLANS.studio.pricing.monthly.price}<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                      )}
+                    </div>
                   </div>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li className="flex items-center gap-2">
@@ -479,10 +538,10 @@ export default function SettingsPage() {
                   <Button
                     className="w-full"
                     variant="outline"
-                    onClick={() => handleUpgrade("pro")}
+                    onClick={() => handleUpgrade("studio")}
                     disabled={isCheckoutLoading}
                   >
-                    {isCheckoutLoading ? "Loading..." : "Contact Sales"}
+                    {isCheckoutLoading ? "Loading..." : "Upgrade to Studio"}
                   </Button>
                 </div>
               </div>

@@ -205,6 +205,7 @@ export default function ReviewsPage() {
     total: number;
     new: number;
     pending: number;
+    approved: number;
     replied: number;
     avgRating: number;
   } | null>(null);

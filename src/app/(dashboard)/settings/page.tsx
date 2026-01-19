@@ -647,7 +647,10 @@ export default function SettingsPage() {
                       <Check className="h-3 w-3 text-primary" /> 500 AI replies/month
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> 4-5 star auto-reply
+                      <Check className="h-3 w-3 text-primary" /> iOS + Android
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="h-3 w-3 text-primary" /> Auto-reply
                     </li>
                   </ul>
                   <Button
@@ -683,10 +686,10 @@ export default function SettingsPage() {
                       <Check className="h-3 w-3 text-primary" /> 3,000 AI replies/month
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> All ratings auto-reply
+                      <Check className="h-3 w-3 text-primary" /> iOS + Android
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> 2 team members
+                      <Check className="h-3 w-3 text-primary" /> Auto-reply
                     </li>
                   </ul>
                   <Button
@@ -722,7 +725,10 @@ export default function SettingsPage() {
                       <Check className="h-3 w-3 text-primary" /> 10,000 AI replies/month
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-3 w-3 text-primary" /> Unlimited team
+                      <Check className="h-3 w-3 text-primary" /> iOS + Android
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="h-3 w-3 text-primary" /> Auto-reply
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-3 w-3 text-primary" /> Priority support

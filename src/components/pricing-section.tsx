@@ -7,15 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { Check, X } from "lucide-react";
 import { useCheckout } from "@/components/paddle-provider";
 import { useState } from "react";
+import { PLANS, BillingInterval, YEARLY_DISCOUNT_MESSAGE } from "@/lib/paddle/config";
 
 export function PricingSection() {
   const { startCheckout, isLoading } = useCheckout();
   const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null);
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
 
   const handleCheckout = async (plan: 'starter' | 'pro' | 'studio') => {
     setCheckoutPlan(plan);
     try {
-      await startCheckout(plan);
+      await startCheckout(plan, undefined, billingInterval);
     } catch (error) {
       console.error('Checkout error:', error);
     } finally {
@@ -23,11 +25,22 @@ export function PricingSection() {
     }
   };
 
+  const getPrice = (plan: keyof typeof PLANS) => {
+    if (billingInterval === 'yearly') {
+      return PLANS[plan].pricing.yearly.monthlyEquivalent || Math.round(PLANS[plan].pricing.yearly.price / 12);
+    }
+    return PLANS[plan].pricing.monthly.price;
+  };
+
+  const getYearlyPrice = (plan: keyof typeof PLANS) => {
+    return PLANS[plan].pricing.yearly.price;
+  };
+
   return (
     <section id="pricing" className="relative py-24 md:py-32 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background" />
 
-      <div className="container relative space-y-16">
+      <div className="container relative space-y-12">
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <Badge variant="outline" className="mb-4">Pricing</Badge>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
@@ -36,6 +49,51 @@ export function PricingSection() {
           <p className="text-lg text-muted-foreground">
             Start free, upgrade when you need more. No hidden fees, cancel anytime.
           </p>
+
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center gap-4 pt-4">
+            <button
+              onClick={() => setBillingInterval('monthly')}
+              className={`text-sm font-medium transition-colors ${
+                billingInterval === 'monthly'
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingInterval(billingInterval === 'monthly' ? 'yearly' : 'monthly')}
+              className={`relative w-14 h-7 rounded-full transition-colors ${
+                billingInterval === 'yearly'
+                  ? 'bg-primary'
+                  : 'bg-muted'
+              }`}
+            >
+              <span
+                className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${
+                  billingInterval === 'yearly' ? 'left-8' : 'left-1'
+                }`}
+              />
+            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setBillingInterval('yearly')}
+                className={`text-sm font-medium transition-colors ${
+                  billingInterval === 'yearly'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Yearly
+              </button>
+              {billingInterval === 'yearly' && (
+                <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">
+                  {YEARLY_DISCOUNT_MESSAGE}
+                </Badge>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4 max-w-7xl mx-auto">
@@ -93,8 +151,13 @@ export function PricingSection() {
               <CardTitle className="text-xl">Starter</CardTitle>
               <CardDescription>For indie developers</CardDescription>
               <div className="pt-4">
-                <span className="text-4xl font-bold">$9</span>
+                <span className="text-4xl font-bold">${getPrice('starter')}</span>
                 <span className="text-muted-foreground">/month</span>
+                {billingInterval === 'yearly' && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ${getYearlyPrice('starter')} billed yearly
+                  </p>
+                )}
               </div>
             </CardHeader>
             <CardContent className="relative space-y-4">
@@ -141,8 +204,13 @@ export function PricingSection() {
               <CardTitle className="text-xl">Pro</CardTitle>
               <CardDescription>For growing businesses</CardDescription>
               <div className="pt-4">
-                <span className="text-4xl font-bold">$29</span>
+                <span className="text-4xl font-bold">${getPrice('pro')}</span>
                 <span className="text-muted-foreground">/month</span>
+                {billingInterval === 'yearly' && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ${getYearlyPrice('pro')} billed yearly
+                  </p>
+                )}
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -182,8 +250,13 @@ export function PricingSection() {
               <CardTitle className="text-xl">Studio</CardTitle>
               <CardDescription>For agencies</CardDescription>
               <div className="pt-4">
-                <span className="text-4xl font-bold">$79</span>
+                <span className="text-4xl font-bold">${getPrice('studio')}</span>
                 <span className="text-muted-foreground">/month</span>
+                {billingInterval === 'yearly' && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ${getYearlyPrice('studio')} billed yearly
+                  </p>
+                )}
               </div>
             </CardHeader>
             <CardContent className="space-y-4">

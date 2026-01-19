@@ -165,7 +165,7 @@ export function PricingSection() {
                   { text: "4 apps", included: true },
                   { text: "500 AI replies/month", included: true },
                   { text: "iOS + Android", included: true },
-                  { text: "4-5 star auto-reply", included: true },
+                  { text: "Auto-reply", included: true },
                   { text: "Analytics", included: true },
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
@@ -217,7 +217,7 @@ export function PricingSection() {
                   { text: "12 apps", included: true },
                   { text: "3,000 AI replies/month", included: true },
                   { text: "iOS + Android", included: true },
-                  { text: "All ratings auto-reply", included: true },
+                  { text: "Auto-reply", included: true },
                   { text: "Analytics", included: true },
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
@@ -262,7 +262,7 @@ export function PricingSection() {
                   { text: "30+ apps", included: true },
                   { text: "10,000 AI replies/month", included: true },
                   { text: "iOS + Android", included: true },
-                  { text: "All ratings auto-reply", included: true },
+                  { text: "Auto-reply", included: true },
                   { text: "Analytics", included: true },
                   { text: "Priority support", included: true },
                 ].map((feature, i) => (

@@ -69,7 +69,7 @@ import {
 } from "@/lib/api/notification-settings";
 import { toast } from "sonner";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { BillingInterval, PLANS, YEARLY_DISCOUNT_PERCENT } from "@/lib/paddle/config";
+import { BillingInterval, PLANS, YEARLY_DISCOUNT_MESSAGE } from "@/lib/paddle/config";
 
 export default function SettingsPage() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -424,7 +424,7 @@ export default function SettingsPage() {
                   >
                     Yearly
                     <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
-                      Save {YEARLY_DISCOUNT_PERCENT}%
+                      {YEARLY_DISCOUNT_MESSAGE}
                     </Badge>
                   </button>
                 </div>

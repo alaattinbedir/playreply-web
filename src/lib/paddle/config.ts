@@ -15,8 +15,11 @@ export const PADDLE_CONFIG = {
 // Billing interval type
 export type BillingInterval = 'monthly' | 'yearly';
 
-// Yearly discount percentage (2 months free = ~17%)
-export const YEARLY_DISCOUNT_PERCENT = 17;
+// Yearly discount percentage (4 months free = ~33%)
+export const YEARLY_DISCOUNT_PERCENT = 33;
+
+// Marketing message for yearly plans
+export const YEARLY_DISCOUNT_MESSAGE = '4 months FREE';
 
 // Plan definitions with Paddle Price IDs
 // Update these after creating products in Paddle Dashboard
@@ -59,9 +62,9 @@ export const PLANS = {
         priceId: process.env.NEXT_PUBLIC_PADDLE_STARTER_PRICE_ID || '',
       },
       yearly: {
-        price: 90, // $9 × 10 months (2 months free)
+        price: 69, // $9 × 8 months (4 months free) - rounded
         priceId: process.env.NEXT_PUBLIC_PADDLE_STARTER_YEARLY_PRICE_ID || '',
-        monthlyEquivalent: 7.5,
+        monthlyEquivalent: 5.75,
       },
     },
     features: [
@@ -89,9 +92,9 @@ export const PLANS = {
         priceId: process.env.NEXT_PUBLIC_PADDLE_PRO_PRICE_ID || '',
       },
       yearly: {
-        price: 290, // $29 × 10 months (2 months free)
+        price: 229, // $29 × 8 months (4 months free) - rounded
         priceId: process.env.NEXT_PUBLIC_PADDLE_PRO_YEARLY_PRICE_ID || '',
-        monthlyEquivalent: 24.17,
+        monthlyEquivalent: 19,
       },
     },
     features: [
@@ -120,9 +123,9 @@ export const PLANS = {
         priceId: process.env.NEXT_PUBLIC_PADDLE_STUDIO_PRICE_ID || '',
       },
       yearly: {
-        price: 790, // $79 × 10 months (2 months free)
+        price: 629, // $79 × 8 months (4 months free) - rounded
         priceId: process.env.NEXT_PUBLIC_PADDLE_STUDIO_YEARLY_PRICE_ID || '',
-        monthlyEquivalent: 65.83,
+        monthlyEquivalent: 52,
       },
     },
     features: [

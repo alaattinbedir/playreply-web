@@ -307,20 +307,22 @@ export default function ReviewsPage() {
 
     const success = await approveReply(selectedReview.id, editedReply);
     if (success) {
-      // Update local state
+      const updatedReview = {
+        ...selectedReview,
+        status: "pending" as const,
+        reply: selectedReview.reply
+          ? { ...selectedReview.reply, final_text: editedReply, send_status: "approved" as const }
+          : { id: '', app_id: selectedReview.app_id, review_id: selectedReview.review_id, suggested_text: editedReply, final_text: editedReply, send_status: "approved" as const, sent_at: null, error_message: null, created_at: new Date().toISOString() },
+      };
+
+      // Update reviews list
       setReviews(reviews.map((r) =>
-        r.id === selectedReview.id
-          ? {
-              ...r,
-              status: "pending" as const,
-              reply: r.reply
-                ? { ...r.reply, final_text: editedReply, send_status: "approved" as const }
-                : undefined,
-            }
-          : r
+        r.id === selectedReview.id ? updatedReview : r
       ));
-      setSelectedReview(null);
-      toast.success("Reply approved");
+
+      // Keep dialog open and update selectedReview so Send Reply button becomes enabled
+      setSelectedReview(updatedReview);
+      toast.success("Reply approved - you can now send it");
     } else {
       toast.error("Failed to approve reply");
     }
@@ -329,12 +331,13 @@ export default function ReviewsPage() {
   const handleSendReply = async () => {
     if (!selectedReview) return;
 
-    setIsSending(true);
-
-    // First approve if not already approved
-    if (!selectedReview.reply || selectedReview.reply.send_status === "draft") {
-      await approveReply(selectedReview.id, editedReply);
+    // Only allow sending if reply is approved
+    if (selectedReview.reply?.send_status !== 'approved') {
+      toast.error("Please approve the reply first");
+      return;
     }
+
+    setIsSending(true);
 
     const success = await sendReply(selectedReview.id);
 
@@ -1044,8 +1047,9 @@ export default function ReviewsPage() {
                   </Button>
                   <Button
                     onClick={handleSendReply}
-                    disabled={!editedReply.trim() || isSending}
+                    disabled={!editedReply.trim() || isSending || selectedReview?.reply?.send_status !== 'approved'}
                     className="w-full sm:w-auto"
+                    title={selectedReview?.reply?.send_status !== 'approved' ? 'Approve the reply first' : ''}
                   >
                     {isSending ? (
                       <>

@@ -14,6 +14,25 @@
 ### Settings
 - [x] iOS credentials management UI (Issuer ID, Key ID, Private Key)
 
+### Reviews Page
+- [x] Platform filter in reviews list
+- [x] Platform icon in review cards
+
+### Analytics Page
+- [x] Platform icons in App Performance table
+
+### n8n Workflows
+- [x] fetch-ios-reviews.json - Fetch reviews from App Store
+- [x] send-ios-reply.json - Send replies to App Store
+- [x] Language auto-detection (AI detects from review text)
+- [x] Regenerate button support for existing reviews
+
+### Configuration
+- [x] Service Account email configured in `.env.local`:
+  ```
+  NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL=playreplyservice@playreply.iam.gserviceaccount.com
+  ```
+
 ---
 
 ## iOS Platform Support - Remaining Tasks
@@ -42,16 +61,6 @@
 
 ---
 
-## Configuration (Completed)
-
-### Google Service Account Email
-- [x] Service Account email configured in `.env.local`:
-  ```
-  NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL=playreplyservice@playreply.iam.gserviceaccount.com
-  ```
-
----
-
 ## Paddle Subscription Integration (Pending Approval)
 
 ### Plan Limits Enforcement
@@ -74,7 +83,7 @@
 
 ## Notification System (Not Implemented)
 
-> ⚠️ Currently UI-only - switches don't save or trigger anything
+> Currently UI-only - switches don't save or trigger anything
 
 ### Database
 - [ ] Create `user_settings` table for notification preferences
@@ -114,10 +123,14 @@
 
 ## Future Enhancements
 
-### Reviews Page
-- [ ] Platform filter in reviews list
-- [ ] Platform icon in review cards
+### Known Issues Context
+- [ ] App-specific known issues (e.g., "bug X exists, will be fixed in version Y")
+- [ ] Include in AI prompt for better responses
 
-### n8n Workflows
-- [ ] fetch-ios-reviews.json - Fetch reviews from App Store
-- [ ] send-ios-reply.json - Send replies to App Store
+### Error Handling
+- [ ] Retry mechanism for failed API calls
+- [ ] Better error messages in UI
+
+### Performance
+- [ ] Batch processing optimization for large number of reviews
+- [ ] Caching for frequently accessed data

@@ -297,7 +297,7 @@ export function PricingSection() {
             All plans include a 14-day free trial. No credit card required to start.
           </p>
           <p className="text-sm text-muted-foreground">
-            Need a custom plan? <a href="mailto:support@playreply.com" className="text-primary hover:underline font-medium">Contact us</a>
+            Need a custom plan? <a href="mailto:support@mobixo.ai" className="text-primary hover:underline font-medium">Contact us</a>
           </p>
         </div>
       </div>

@@ -135,7 +135,7 @@ export default function PrivacyPage() {
               <li>Withdraw consent</li>
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-4">
-              To exercise these rights, contact us at privacy@playreply.com.
+              To exercise these rights, contact us at privacy@mobixo.ai.
             </p>
           </section>
 
@@ -181,8 +181,8 @@ export default function PrivacyPage() {
               If you have questions about this Privacy Policy, please contact us:
             </p>
             <div className="text-muted-foreground mt-4 space-y-1">
-              <p>Email: <a href="mailto:privacy@playreply.com" className="text-primary hover:underline">privacy@playreply.com</a></p>
-              <p>Support: <a href="mailto:support@playreply.com" className="text-primary hover:underline">support@playreply.com</a></p>
+              <p>Email: <a href="mailto:privacy@mobixo.ai" className="text-primary hover:underline">privacy@mobixo.ai</a></p>
+              <p>Support: <a href="mailto:support@mobixo.ai" className="text-primary hover:underline">support@mobixo.ai</a></p>
             </div>
           </section>
         </div>

@@ -10,6 +10,11 @@
 - [x] "Setup Required" badge for iOS apps without credentials
 - [x] Updated Android setup guide with shared SA model
 - [x] Copy button for SA email
+- [x] Auto-sync reviews on page load
+- [x] Polling: sync every 5 minutes while page is open
+- [x] Sync status indicator in header (syncing/last sync time)
+- [x] App icons fetched from App Store / Google Play
+- [x] Auto-fetch icons for existing apps without icons
 
 ### Settings
 - [x] iOS credentials management UI (Issuer ID, Key ID, Private Key)

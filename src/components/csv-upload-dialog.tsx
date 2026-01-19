@@ -456,7 +456,12 @@ export function CSVUploadDialog({
                       </a>
                       {" → Download reports → Reviews"}
                     </li>
-                    <li>İstediğiniz ayın yanındaki indirme ikonuna (↓) tıklayın</li>
+                    <li>
+                      İstediğiniz ayın yanındaki indirme ikonuna (↓) tıklayın
+                      <span className="block text-[10px] text-muted-foreground/70 mt-0.5 ml-0">
+                        💡 İpucu: Dosya tarayıcıda açılırsa, linke sağ tıklayıp &quot;Bağlantıyı farklı kaydet&quot; seçin
+                      </span>
+                    </li>
                     <li>İndirilen CSV dosyasını buraya yükleyin</li>
                   </ol>
                 </div>

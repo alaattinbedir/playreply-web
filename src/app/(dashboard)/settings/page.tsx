@@ -62,6 +62,11 @@ import {
   DEFAULT_REPLY_SETTINGS,
   type UserReplySettings,
 } from "@/lib/api/reply-settings";
+import {
+  getNotificationSettings,
+  saveNotificationSettings,
+  DEFAULT_NOTIFICATION_SETTINGS,
+} from "@/lib/api/notification-settings";
 import { toast } from "sonner";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -73,10 +78,11 @@ export default function SettingsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { startCheckout, isLoading: isCheckoutLoading } = useCheckout();
 
-  // Settings state
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [weeklyReports, setWeeklyReports] = useState(true);
-  const [newReviewAlerts, setNewReviewAlerts] = useState(true);
+  // Notification settings state
+  const [emailNotifications, setEmailNotifications] = useState(DEFAULT_NOTIFICATION_SETTINGS.email_notifications);
+  const [weeklyReports, setWeeklyReports] = useState(DEFAULT_NOTIFICATION_SETTINGS.weekly_reports);
+  const [newReviewAlerts, setNewReviewAlerts] = useState(DEFAULT_NOTIFICATION_SETTINGS.new_review_alerts);
+  const [isSavingNotificationSettings, setIsSavingNotificationSettings] = useState(false);
 
   // 5-tier tone settings
   const [tone5Star, setTone5Star] = useState(DEFAULT_REPLY_SETTINGS.tone_5_star);
@@ -100,11 +106,12 @@ export default function SettingsPage() {
       setIsLoading(true);
       try {
         const supabase = createClient();
-        const [{ data: { user } }, usage, iosCreds, replySettings] = await Promise.all([
+        const [{ data: { user } }, usage, iosCreds, replySettings, notificationSettings] = await Promise.all([
           supabase.auth.getUser(),
           getPlanUsage(),
           getIOSCredentials(),
           getReplySettings(),
+          getNotificationSettings(),
         ]);
         setUser(user);
         setPlanUsage(usage);
@@ -117,6 +124,13 @@ export default function SettingsPage() {
           setTone3Star(replySettings.tone_3_star);
           setTone2Star(replySettings.tone_2_star);
           setTone1Star(replySettings.tone_1_star);
+        }
+
+        // Set notification settings from database or defaults
+        if (notificationSettings) {
+          setEmailNotifications(notificationSettings.email_notifications);
+          setNewReviewAlerts(notificationSettings.new_review_alerts);
+          setWeeklyReports(notificationSettings.weekly_reports);
         }
       } catch (error) {
         console.error("Error fetching settings data:", error);
@@ -198,6 +212,23 @@ export default function SettingsPage() {
       toast.error("Failed to read file");
     };
     reader.readAsText(file);
+  };
+
+  // Save notification settings
+  const handleSaveNotificationSettings = async () => {
+    setIsSavingNotificationSettings(true);
+    const success = await saveNotificationSettings({
+      email_notifications: emailNotifications,
+      new_review_alerts: newReviewAlerts,
+      weekly_reports: weeklyReports,
+    });
+
+    if (success) {
+      toast.success("Notification settings saved");
+    } else {
+      toast.error("Failed to save notification settings");
+    }
+    setIsSavingNotificationSettings(false);
   };
 
   // Save tone settings
@@ -524,6 +555,21 @@ export default function SettingsPage() {
             />
           </div>
         </CardContent>
+        <CardFooter className="border-t pt-4">
+          <Button onClick={handleSaveNotificationSettings} disabled={isSavingNotificationSettings}>
+            {isSavingNotificationSettings ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Check className="mr-2 h-4 w-4" />
+                Save Notification Settings
+              </>
+            )}
+          </Button>
+        </CardFooter>
       </Card>
 
       {/* AI Reply Settings */}

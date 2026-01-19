@@ -23,9 +23,7 @@ import {
   RefreshCw,
   HelpCircle,
   Cloud,
-  ExternalLink,
   Sparkles,
-  Clock,
   Shield,
 } from "lucide-react";
 
@@ -51,7 +49,7 @@ export function CSVUploadDialog({
   platform,
   onSuccess,
 }: CSVUploadDialogProps) {
-  const [mode, setMode] = useState<ImportMode>("cloud-storage");
+  const [mode, setMode] = useState<ImportMode>("csv-upload");
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [cloudStorageUrl, setCloudStorageUrl] = useState("");
@@ -274,34 +272,37 @@ export function CSVUploadDialog({
           {uploadState === "idle" && (
             <Tabs value={mode} onValueChange={(v) => setMode(v as ImportMode)} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="cloud-storage" className="flex items-center gap-2">
-                  <Cloud className="h-4 w-4" />
-                  Cloud Storage
+                <TabsTrigger value="csv-upload" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  CSV Yükle
                   <span className="ml-1 px-1.5 py-0.5 text-[10px] font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">
                     Önerilen
                   </span>
                 </TabsTrigger>
-                <TabsTrigger value="csv-upload" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  CSV Yükle
+                <TabsTrigger value="cloud-storage" className="flex items-center gap-2">
+                  <Cloud className="h-4 w-4" />
+                  Cloud Storage
+                  <span className="ml-1 px-1.5 py-0.5 text-[10px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
+                    Gelişmiş
+                  </span>
                 </TabsTrigger>
               </TabsList>
 
               {/* Cloud Storage Tab */}
               <TabsContent value="cloud-storage" className="space-y-4 mt-4">
-                {/* Benefits */}
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    <span>Tek URL ile tümü</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>Otomatik güncelleme</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400">
-                    <Shield className="h-3.5 w-3.5" />
-                    <span>Tek seferlik kurulum</span>
+                {/* Warning for advanced users */}
+                <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-3">
+                  <div className="flex gap-2">
+                    <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-amber-800 dark:text-amber-200">
+                        Terminal komutu gerektirir
+                      </p>
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        Google Play bucket&apos;larına erişim için <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">gsutil</code> komutu
+                        kullanmanız gerekir. Teknik bilgi gerektirdiği için <strong>CSV Yükle</strong> yöntemini öneriyoruz.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -332,66 +333,45 @@ export function CSVUploadDialog({
                   </div>
 
                   {/* Setup Instructions */}
-                  <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-4 space-y-3">
-                    <div className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
-                      <AlertCircle className="h-4 w-4 text-amber-500" />
-                      Tek Seferlik Kurulum Gerekli
-                    </div>
-                    <p className="text-xs text-amber-700 dark:text-amber-300">
-                      PlayReply&apos;ın Cloud Storage bucket&apos;ınıza erişmesi için izin verin:
+                  <div className="rounded-lg bg-muted/50 p-4 space-y-3">
+                    <p className="text-xs font-medium">
+                      Terminal&apos;de şu komutu çalıştırın:
                     </p>
-                    <ol className="text-xs text-amber-700 dark:text-amber-300 space-y-1.5 list-decimal list-inside">
-                      <li>
-                        <a
-                          href="https://console.cloud.google.com/iam-admin/iam"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline hover:text-amber-900 dark:hover:text-amber-100"
-                        >
-                          Google Cloud Console → IAM
-                        </a>
-                        {" sayfasına gidin"}
-                      </li>
-                      <li>
-                        Üst menüden <strong>Google Play Developer hesabınızla ilişkili projeyi</strong> seçin
-                        <span className="block text-[10px] opacity-75 mt-0.5">
-                          (genellikle uygulama adınızı içerir, örn: &quot;Stepster&quot;, &quot;MyApp&quot;)
-                        </span>
-                      </li>
-                      <li><strong>&quot;Grant Access&quot;</strong> butonuna tıklayın</li>
-                      <li>Aşağıdaki email&apos;i ekleyin:</li>
-                    </ol>
-                    <div className="flex items-center gap-2">
-                      <code className="flex-1 px-2 py-1.5 bg-white dark:bg-amber-950 rounded text-xs font-mono text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800 truncate">
-                        playreplyservice@playreply.iam.gserviceaccount.com
+                    <div className="space-y-2">
+                      <code className="block px-3 py-2 bg-gray-900 dark:bg-gray-950 rounded text-xs font-mono text-green-400 overflow-x-auto">
+                        gsutil iam ch serviceAccount:playreplyservice@playreply.iam.gserviceaccount.com:objectViewer gs://BUCKET_ID
                       </code>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-7 px-2 shrink-0 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900"
-                        onClick={() => {
-                          navigator.clipboard.writeText("playreplyservice@playreply.iam.gserviceaccount.com");
-                        }}
-                      >
-                        Kopyala
-                      </Button>
+                      <p className="text-[10px] text-muted-foreground">
+                        BUCKET_ID yerine yukarıdaki URL&apos;deki bucket adını yazın (örn: pubsite_prod_rev_123...)
+                      </p>
                     </div>
-                    <p className="text-xs text-amber-700 dark:text-amber-300">
-                      5. Rol olarak <strong>&quot;Storage Object Viewer&quot;</strong> seçin ve kaydedin
-                    </p>
+                    <div className="pt-2 border-t">
+                      <p className="text-xs text-muted-foreground">
+                        <strong>gsutil yüklü değilse:</strong>{" "}
+                        <code className="bg-muted px-1 rounded">brew install google-cloud-sdk</code> ile yükleyip{" "}
+                        <code className="bg-muted px-1 rounded">gcloud auth login</code> ile giriş yapın.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </TabsContent>
 
               {/* CSV Upload Tab */}
               <TabsContent value="csv-upload" className="space-y-4 mt-4">
-                {/* Info about limitations */}
-                <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-                  <p>
-                    <strong>Not:</strong> CSV dosyaları Play Console&apos;da her ay için ayrı ayrı indirilir.
-                    Çok sayıda geçmiş yorumunuz varsa Cloud Storage yöntemi daha pratiktir.
-                  </p>
+                {/* Benefits */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>Kolay kullanım</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400">
+                    <Shield className="h-3.5 w-3.5" />
+                    <span>Kurulum gerektirmez</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span>Hemen çalışır</span>
+                  </div>
                 </div>
 
                 <div

@@ -42,6 +42,10 @@ import {
   Key,
   Upload,
   CheckCircle2,
+  Eye,
+  EyeOff,
+  Smartphone,
+  Copy,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
@@ -105,6 +109,27 @@ export default function SettingsPage() {
   const [iosKeyId, setIosKeyId] = useState("");
   const [iosPrivateKey, setIosPrivateKey] = useState("");
 
+  // Password change state
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // 2FA state
+  const [is2FADialogOpen, setIs2FADialogOpen] = useState(false);
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const [totpSecret, setTotpSecret] = useState("");
+  const [totpQRCode, setTotpQRCode] = useState("");
+  const [totpFactorId, setTotpFactorId] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [isEnrolling2FA, setIsEnrolling2FA] = useState(false);
+  const [isVerifying2FA, setIsVerifying2FA] = useState(false);
+  const [isDisabling2FA, setIsDisabling2FA] = useState(false);
+  const [twoFAStep, setTwoFAStep] = useState<"setup" | "verify">("setup");
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -135,6 +160,16 @@ export default function SettingsPage() {
           setEmailNotifications(notificationSettings.email_notifications);
           setNewReviewAlerts(notificationSettings.new_review_alerts);
           setWeeklyReports(notificationSettings.weekly_reports);
+        }
+
+        // Check 2FA status
+        const { data: factorsData } = await supabase.auth.mfa.listFactors();
+        if (factorsData?.totp && factorsData.totp.length > 0) {
+          const verifiedFactor = factorsData.totp.find(f => f.status === "verified");
+          if (verifiedFactor) {
+            setIs2FAEnabled(true);
+            setTotpFactorId(verifiedFactor.id);
+          }
         }
       } catch (error) {
         console.error("Error fetching settings data:", error);
@@ -216,6 +251,153 @@ export default function SettingsPage() {
       toast.error("Failed to read file");
     };
     reader.readAsText(file);
+  };
+
+  // Password change handler
+  const handleChangePassword = async () => {
+    if (!newPassword || !confirmPassword) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Password updated successfully");
+        setIsPasswordDialogOpen(false);
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch (error) {
+      toast.error("Failed to update password");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  // 2FA enrollment handler
+  const handleEnroll2FA = async () => {
+    setIsEnrolling2FA(true);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: "totp",
+        friendlyName: "PlayReply Authenticator",
+      });
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      if (data) {
+        setTotpSecret(data.totp.secret);
+        setTotpQRCode(data.totp.qr_code);
+        setTotpFactorId(data.id);
+        setTwoFAStep("verify");
+      }
+    } catch (error) {
+      toast.error("Failed to set up 2FA");
+    } finally {
+      setIsEnrolling2FA(false);
+    }
+  };
+
+  // 2FA verification handler
+  const handleVerify2FA = async () => {
+    if (verificationCode.length !== 6) {
+      toast.error("Please enter a 6-digit code");
+      return;
+    }
+
+    setIsVerifying2FA(true);
+    try {
+      const supabase = createClient();
+
+      // Create a challenge
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+        factorId: totpFactorId,
+      });
+
+      if (challengeError) {
+        toast.error(challengeError.message);
+        return;
+      }
+
+      // Verify the challenge
+      const { error: verifyError } = await supabase.auth.mfa.verify({
+        factorId: totpFactorId,
+        challengeId: challengeData.id,
+        code: verificationCode,
+      });
+
+      if (verifyError) {
+        toast.error("Invalid verification code");
+        return;
+      }
+
+      toast.success("Two-factor authentication enabled!");
+      setIs2FAEnabled(true);
+      setIs2FADialogOpen(false);
+      setVerificationCode("");
+      setTwoFAStep("setup");
+    } catch (error) {
+      toast.error("Failed to verify 2FA");
+    } finally {
+      setIsVerifying2FA(false);
+    }
+  };
+
+  // 2FA disable handler
+  const handleDisable2FA = async () => {
+    setIsDisabling2FA(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.mfa.unenroll({
+        factorId: totpFactorId,
+      });
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      toast.success("Two-factor authentication disabled");
+      setIs2FAEnabled(false);
+      setTotpFactorId("");
+    } catch (error) {
+      toast.error("Failed to disable 2FA");
+    } finally {
+      setIsDisabling2FA(false);
+    }
+  };
+
+  // Copy to clipboard handler
+  const handleCopySecret = async () => {
+    try {
+      await navigator.clipboard.writeText(totpSecret);
+      toast.success("Secret copied to clipboard");
+    } catch {
+      toast.error("Failed to copy");
+    }
   };
 
   // Save notification settings
@@ -810,22 +992,247 @@ export default function SettingsPage() {
                 Change your password
               </p>
             </div>
-            <Button variant="outline">Change Password</Button>
+            <Button variant="outline" onClick={() => setIsPasswordDialogOpen(true)}>
+              Change Password
+            </Button>
           </div>
           <Separator />
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">Two-Factor Authentication</p>
               <p className="text-sm text-muted-foreground">
-                Add an extra layer of security
+                {is2FAEnabled
+                  ? "Your account is protected with 2FA"
+                  : "Add an extra layer of security"
+                }
               </p>
             </div>
-            <Button variant="outline" disabled>
-              Coming Soon
-            </Button>
+            {is2FAEnabled ? (
+              <div className="flex items-center gap-2">
+                <Badge variant="default" className="bg-green-600">
+                  <Check className="h-3 w-3 mr-1" />
+                  Enabled
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDisable2FA}
+                  disabled={isDisabling2FA}
+                >
+                  {isDisabling2FA ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Disable"
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => setIs2FADialogOpen(true)}
+              >
+                <Smartphone className="h-4 w-4 mr-2" />
+                Enable 2FA
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Password Change Dialog */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>
+              Enter your new password below
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Minimum 6 characters
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsPasswordDialogOpen(false);
+                setNewPassword("");
+                setConfirmPassword("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleChangePassword}
+              disabled={!newPassword || !confirmPassword || isChangingPassword}
+            >
+              {isChangingPassword ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Update Password"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 2FA Setup Dialog */}
+      <Dialog open={is2FADialogOpen} onOpenChange={(open) => {
+        setIs2FADialogOpen(open);
+        if (!open) {
+          setTwoFAStep("setup");
+          setVerificationCode("");
+        }
+      }}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Smartphone className="h-5 w-5" />
+              Two-Factor Authentication
+            </DialogTitle>
+            <DialogDescription>
+              {twoFAStep === "setup"
+                ? "Scan the QR code with your authenticator app"
+                : "Enter the 6-digit code from your authenticator app"
+              }
+            </DialogDescription>
+          </DialogHeader>
+
+          {twoFAStep === "setup" && !totpQRCode && (
+            <div className="py-8 flex flex-col items-center gap-4">
+              <p className="text-sm text-muted-foreground text-center">
+                Use an authenticator app like Google Authenticator, Authy, or 1Password to add an extra layer of security.
+              </p>
+              <Button onClick={handleEnroll2FA} disabled={isEnrolling2FA}>
+                {isEnrolling2FA ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Setting up...
+                  </>
+                ) : (
+                  "Set Up 2FA"
+                )}
+              </Button>
+            </div>
+          )}
+
+          {twoFAStep === "verify" && totpQRCode && (
+            <div className="space-y-4 py-4">
+              {/* QR Code */}
+              <div className="flex justify-center">
+                <div className="p-4 bg-white rounded-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={totpQRCode}
+                    alt="2FA QR Code"
+                    className="w-48 h-48"
+                  />
+                </div>
+              </div>
+
+              {/* Manual entry option */}
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground text-center">
+                  Can&apos;t scan? Enter this code manually:
+                </p>
+                <div className="flex items-center gap-2 justify-center">
+                  <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
+                    {totpSecret}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopySecret}
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Verification code input */}
+              <div className="space-y-2">
+                <Label htmlFor="verification-code">Verification Code</Label>
+                <Input
+                  id="verification-code"
+                  placeholder="000000"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  className="text-center text-lg tracking-widest font-mono"
+                  maxLength={6}
+                />
+              </div>
+            </div>
+          )}
+
+          {twoFAStep === "verify" && (
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIs2FADialogOpen(false);
+                  setTwoFAStep("setup");
+                  setVerificationCode("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleVerify2FA}
+                disabled={verificationCode.length !== 6 || isVerifying2FA}
+              >
+                {isVerifying2FA ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  "Verify & Enable"
+                )}
+              </Button>
+            </DialogFooter>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* iOS Credentials Section */}
       <Card>

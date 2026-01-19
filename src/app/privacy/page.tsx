@@ -3,7 +3,7 @@ import { MessageSquare } from "lucide-react";
 
 export const metadata = {
   title: "Privacy Policy - PlayReply",
-  description: "Privacy Policy for PlayReply - AI-powered Google Play review responses",
+  description: "Privacy Policy for PlayReply - AI-powered review responses for Google Play & App Store",
 };
 
 export default function PrivacyPage() {
@@ -41,7 +41,7 @@ export default function PrivacyPage() {
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
               <li>Account information (email address, name, password)</li>
               <li>Payment information (processed securely by Paddle)</li>
-              <li>Google Play Console credentials and API access</li>
+              <li>Google Play Console and App Store Connect credentials and API access</li>
               <li>App information and review data from connected apps</li>
               <li>Custom reply templates and preferences</li>
               <li>Support communications</li>
@@ -91,6 +91,7 @@ export default function PrivacyPage() {
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
               <li><strong>Anthropic:</strong> For AI processing of review responses</li>
               <li><strong>Google:</strong> For Google Play Console API integration</li>
+              <li><strong>Apple:</strong> For App Store Connect API integration</li>
               <li><strong>Paddle:</strong> For payment processing</li>
               <li><strong>Supabase:</strong> For database and authentication services</li>
               <li><strong>Vercel:</strong> For hosting services</li>

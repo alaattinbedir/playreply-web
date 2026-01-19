@@ -3,7 +3,7 @@ import { MessageSquare } from "lucide-react";
 
 export const metadata = {
   title: "Terms of Service - PlayReply",
-  description: "Terms of Service for PlayReply - AI-powered Google Play review responses",
+  description: "Terms of Service for PlayReply - AI-powered review responses for Google Play & App Store",
 };
 
 export default function TermsPage() {
@@ -38,7 +38,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-semibold mb-4">2. Description of Service</h2>
             <p className="text-muted-foreground leading-relaxed">
               PlayReply is a SaaS platform that uses artificial intelligence (Claude AI) to automatically
-              generate professional responses to Google Play Store app reviews. Our service helps mobile
+              generate professional responses to Google Play Store and iOS App Store reviews. Our service helps mobile
               app developers save time by creating personalized, multi-language replies to user reviews.
             </p>
           </section>
@@ -104,11 +104,12 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">8. Google Play Integration</h2>
+            <h2 className="text-2xl font-semibold mb-4">8. Platform Integrations</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Our Service integrates with Google Play Console API. You must have proper authorization
-              to manage the apps you connect to PlayReply. You are responsible for complying with
-              Google Play Developer policies when using our Service.
+              Our Service integrates with Google Play Console API and Apple App Store Connect API.
+              You must have proper authorization to manage the apps you connect to PlayReply.
+              You are responsible for complying with Google Play Developer policies and Apple App Store
+              Review Guidelines when using our Service.
             </p>
           </section>
 

@@ -75,7 +75,7 @@ export default function Home() {
 
               {/* Main Heading */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight max-w-4xl animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
-                Respond to Google Play Reviews with{" "}
+                Respond to App Reviews with{" "}
                 <span className="relative">
                   <span className="bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
                     AI Intelligence
@@ -261,7 +261,7 @@ export default function Home() {
                 <span className="font-bold text-xl">PlayReply</span>
               </Link>
               <p className="mt-4 text-sm text-muted-foreground max-w-xs">
-                AI-powered review responses for Google Play developers. Save time, improve ratings.
+                AI-powered review responses for Google Play & App Store. Save time, improve ratings.
               </p>
               <div className="flex gap-4 mt-6">
                 <Link href="https://twitter.com/playreply" className="text-muted-foreground hover:text-foreground transition-colors">

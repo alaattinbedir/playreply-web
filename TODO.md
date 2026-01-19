@@ -35,29 +35,17 @@
 
 ---
 
-## iOS Platform Support - Remaining Tasks
+## iOS Platform Support - Completed
 
 ### Meta & SEO Updates
-- [ ] `src/app/layout.tsx` - Update meta title, description, keywords to include iOS/App Store
-  - Line 15: "AI-Powered Google Play Review Responses" → include App Store
-  - Line 16-17: Description and keywords
-  - Lines 20-21, 28-29: OpenGraph and Twitter meta
+- [x] `src/app/layout.tsx` - Already includes iOS/App Store references
 
 ### Landing Page
-- [ ] `src/app/page.tsx` - Update hero and footer text
-  - Line 78: "Respond to Google Play Reviews with..." → include App Store
-  - Line 264: Footer description
+- [x] `src/app/page.tsx` - Updated hero ("Respond to App Reviews") and footer text
 
 ### Legal Pages
-- [ ] `src/app/privacy/page.tsx` - Update privacy policy
-  - Line 6: Meta description
-  - Line 44: "Google Play Console credentials" → include App Store Connect
-  - Line 93: Third-party services list
-
-- [ ] `src/app/terms/page.tsx` - Update terms of service
-  - Line 6: Meta description
-  - Line 41: Service description
-  - Lines 107-111: Section 8 "Google Play Integration" → "App Store Integration"
+- [x] `src/app/privacy/page.tsx` - Updated with App Store Connect credentials and Apple in data sharing
+- [x] `src/app/terms/page.tsx` - Updated service description and Section 8 "Platform Integrations"
 
 ---
 

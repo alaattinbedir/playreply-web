@@ -46,6 +46,12 @@ import {
   CheckSquare,
   Square,
   Minus,
+  Bug,
+  Lightbulb,
+  Zap,
+  Angry,
+  Heart,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -115,6 +121,31 @@ function ReplyStatusBadge({ status }: { status: "draft" | "approved" | "sent" | 
       <Icon className="h-3 w-3" />
       {variant.label}
     </div>
+  );
+}
+
+// Category badge component
+function CategoryBadge({ category }: { category: string | null }) {
+  if (!category || category === "general") return null;
+
+  const variants: Record<string, { label: string; icon: typeof Bug; className: string }> = {
+    bug: { label: "Bug", icon: Bug, className: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800" },
+    feature_request: { label: "Feature", icon: Lightbulb, className: "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800" },
+    performance: { label: "Performance", icon: Zap, className: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800" },
+    angry: { label: "Complaint", icon: Angry, className: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800" },
+    praise: { label: "Praise", icon: Heart, className: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" },
+  };
+
+  const variant = variants[category];
+  if (!variant) return null;
+
+  const Icon = variant.icon;
+
+  return (
+    <Badge variant="outline" className={cn("text-xs gap-1", variant.className)}>
+      <Icon className="h-3 w-3" />
+      {variant.label}
+    </Badge>
   );
 }
 
@@ -800,6 +831,7 @@ export default function ReviewsPage() {
                         <span className="font-medium">{review.author_name || "Anonymous"}</span>
                         <StarRating rating={review.rating} />
                         <StatusBadge status={review.status} />
+                        <CategoryBadge category={review.category} />
                         <span className="text-xs text-muted-foreground">
                           {review.created_at ? new Date(review.created_at).toLocaleDateString() : ""}
                         </span>
@@ -876,6 +908,7 @@ export default function ReviewsPage() {
                       </DialogTitle>
                       <div className="flex items-center gap-2 mt-1">
                         <StarRating rating={selectedReview.rating} />
+                        <CategoryBadge category={selectedReview.category} />
                         <span className="text-xs text-muted-foreground">
                           {selectedReview.created_at ? new Date(selectedReview.created_at).toLocaleDateString() : ""}
                         </span>

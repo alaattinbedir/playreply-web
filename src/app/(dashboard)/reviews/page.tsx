@@ -249,6 +249,7 @@ export default function ReviewsPage() {
   }, [filterStatus, filterRating, filterApp]);
 
   // Auto-refresh every 5 seconds for 2 minutes after mount (for workflow updates)
+  // Re-starts when filters change to ensure polling respects current filters
   useEffect(() => {
     let pollCount = 0;
     const maxPolls = 24; // 24 polls * 5 seconds = 2 minutes
@@ -259,11 +260,20 @@ export default function ReviewsPage() {
         clearInterval(pollInterval);
         return;
       }
-      fetchData(false); // Refresh without showing loading spinner
+      // Fetch with current filter values
+      getReviews({
+        status: filterStatus !== "all" ? filterStatus : undefined,
+        rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
+        appId: filterApp !== "all" ? filterApp : undefined,
+      }).then((reviewsData) => {
+        setReviews(reviewsData);
+      }).catch((error) => {
+        console.error("Error polling reviews:", error);
+      });
     }, 5000);
 
     return () => clearInterval(pollInterval);
-  }, []);
+  }, [filterStatus, filterRating, filterApp]);
 
   const handleOpenReview = (review: Review) => {
     setSelectedReview(review);

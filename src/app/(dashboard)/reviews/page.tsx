@@ -663,7 +663,10 @@ export default function ReviewsPage() {
                     <SelectItem value="all">All Apps</SelectItem>
                     {apps.map((app) => (
                       <SelectItem key={app.id} value={app.id}>
-                        {app.display_name || app.package_name}
+                        <span className="flex items-center gap-2">
+                          <PlatformIcon platform={app.platform} />
+                          {app.display_name || app.package_name}
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -877,7 +880,8 @@ export default function ReviewsPage() {
                     </div>
 
                     {/* App name */}
-                    <Badge variant="secondary" className="shrink-0 hidden md:flex">
+                    <Badge variant="secondary" className="shrink-0 hidden md:flex items-center gap-1.5">
+                      <PlatformIcon platform={review.platform} />
                       {review.app?.display_name || review.app?.package_name || "Unknown App"}
                     </Badge>
 

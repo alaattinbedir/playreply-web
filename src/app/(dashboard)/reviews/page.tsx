@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -219,6 +219,28 @@ export default function ReviewsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const [generatingReplyId, setGeneratingReplyId] = useState<string | null>(null);
+
+  // Calculate dynamic stats from filtered reviews
+  const filteredStats = useMemo(() => {
+    if (reviews.length === 0) return null;
+
+    const newCount = reviews.filter((r) => r.status === "new").length;
+    const pendingCount = reviews.filter((r) => r.status === "pending").length;
+    const repliedCount = reviews.filter((r) => r.status === "replied").length;
+    const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+    const avgRating = reviews.length > 0 ? totalRating / reviews.length : 0;
+
+    return {
+      total: reviews.length,
+      new: newCount,
+      pending: pendingCount,
+      replied: repliedCount,
+      avgRating,
+    };
+  }, [reviews]);
+
+  // Check if any filter is active
+  const hasActiveFilter = filterStatus !== "all" || filterRating !== "all" || filterApp !== "all";
 
   // Fetch data function
   const fetchData = async (showLoading = true) => {
@@ -1045,41 +1067,48 @@ export default function ReviewsPage() {
           </DialogContent>
         </Dialog>
 
-        {/* Quick stats */}
-        {stats && stats.total > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">
-                  {stats.new}
-                </div>
-                <div className="text-xs text-muted-foreground">New Reviews</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">
-                  {stats.pending}
-                </div>
-                <div className="text-xs text-muted-foreground">Pending Approval</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">
-                  {stats.replied}
-                </div>
-                <div className="text-xs text-muted-foreground">Replied</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-amber-600">
-                  {stats.avgRating.toFixed(1)}
-                </div>
-                <div className="text-xs text-muted-foreground">Avg. Rating</div>
-              </CardContent>
-            </Card>
+        {/* Quick stats - shows filtered stats when filter is active */}
+        {(filteredStats || stats) && (
+          <div className="space-y-2">
+            {hasActiveFilter && filteredStats && (
+              <p className="text-xs text-muted-foreground text-center">
+                Showing stats for filtered results ({filteredStats.total} reviews)
+              </p>
+            )}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold">
+                    {filteredStats?.new ?? stats?.new ?? 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground">New Reviews</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold">
+                    {filteredStats?.pending ?? stats?.pending ?? 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Pending Approval</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold">
+                    {filteredStats?.replied ?? stats?.replied ?? 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Replied</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-amber-600">
+                    {(filteredStats?.avgRating ?? stats?.avgRating ?? 0).toFixed(1)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Avg. Rating</div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         )}
       </div>

@@ -14,6 +14,14 @@
 ### Settings
 - [x] iOS credentials management UI (Issuer ID, Key ID, Private Key)
 
+### Security
+- [x] Change Password dialog with validation
+- [x] OAuth user detection (hide password change for Google users)
+- [x] Two-Factor Authentication (TOTP) with QR code
+- [x] Manual secret entry and copy to clipboard
+- [x] 2FA enable/disable functionality
+- [x] Supabase MFA enabled in dashboard
+
 ### Reviews Page
 - [x] Platform filter in reviews list
 - [x] Platform icon in review cards

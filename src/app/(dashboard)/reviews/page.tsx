@@ -878,7 +878,6 @@ export default function ReviewsPage() {
 
                       {review.reply ? (
                         <div className="flex items-center gap-2 mt-2">
-                          <PlatformIcon platform={review.platform} />
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Sparkles className="h-3 w-3" />
                             AI Reply
@@ -887,7 +886,6 @@ export default function ReviewsPage() {
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 mt-2">
-                          <PlatformIcon platform={review.platform} />
                           <Button
                             variant="outline"
                             size="sm"

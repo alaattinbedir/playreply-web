@@ -48,6 +48,7 @@ import {
   Bot,
   Send,
   Shield,
+  Upload,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -61,6 +62,7 @@ import { getPlanUsage } from "@/lib/api/stats";
 import { hasIOSCredentials } from "@/lib/api/ios-credentials";
 import { toast } from "sonner";
 import Link from "next/link";
+import { CSVUploadDialog } from "@/components/csv-upload-dialog";
 
 // Platform Icon Component
 function PlatformIcon({ platform }: { platform: "android" | "ios" | null }) {
@@ -112,6 +114,7 @@ export default function AppsPage() {
   const [settingsDialogApp, setSettingsDialogApp] = useState<App | null>(null);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [iosCredentialsConfigured, setIosCredentialsConfigured] = useState(false);
+  const [csvUploadApp, setCsvUploadApp] = useState<App | null>(null);
 
   // Auto-sync state
   const [isAutoSyncing, setIsAutoSyncing] = useState(false);
@@ -751,6 +754,12 @@ export default function AppsPage() {
                               <RefreshCw className="mr-2 h-4 w-4" />
                               Sync Now
                             </DropdownMenuItem>
+                            {app.platform === "android" && (
+                              <DropdownMenuItem onClick={() => setCsvUploadApp(app)}>
+                                <Upload className="mr-2 h-4 w-4" />
+                                Import Historical Reviews
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem asChild>
                               <a
                                 href={app.platform === "ios"
@@ -1007,6 +1016,22 @@ export default function AppsPage() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* CSV Upload Dialog */}
+        {csvUploadApp && (
+          <CSVUploadDialog
+            open={!!csvUploadApp}
+            onOpenChange={(open) => !open && setCsvUploadApp(null)}
+            appId={csvUploadApp.id}
+            appName={csvUploadApp.display_name || csvUploadApp.package_name}
+            packageName={csvUploadApp.package_name}
+            platform={csvUploadApp.platform || "android"}
+            onSuccess={(count) => {
+              toast.success(`${count} reviews imported! AI replies will be generated.`);
+              loadData(); // Refresh data
+            }}
+          />
+        )}
       </div>
     </TooltipProvider>
   );

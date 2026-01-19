@@ -240,8 +240,8 @@ export function CSVUploadDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[540px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[540px] max-h-[90vh] flex flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5 text-primary" />
             Import Historical Reviews
@@ -251,7 +251,7 @@ export function CSVUploadDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
+        <div className="py-4 space-y-4 flex-1 overflow-y-auto">
           {/* Info Box */}
           <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 p-4">
             <div className="flex gap-3">
@@ -580,7 +580,7 @@ export function CSVUploadDialog({
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="shrink-0">
           {uploadState === "idle" && (
             <>
               <Button variant="outline" onClick={handleClose}>

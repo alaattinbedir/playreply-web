@@ -225,7 +225,8 @@ export default function ReviewsPage() {
     if (reviews.length === 0) return null;
 
     const newCount = reviews.filter((r) => r.status === "new").length;
-    const pendingCount = reviews.filter((r) => r.status === "pending").length;
+    // Pending Approval = reviews with draft replies (not yet approved)
+    const pendingCount = reviews.filter((r) => r.reply?.send_status === "draft").length;
     const repliedCount = reviews.filter((r) => r.status === "replied").length;
     const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
     const avgRating = reviews.length > 0 ? totalRating / reviews.length : 0;

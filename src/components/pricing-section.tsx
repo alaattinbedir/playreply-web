@@ -115,7 +115,6 @@ export function PricingSection() {
                   { text: "iOS + Android", included: true },
                   { text: "Auto-reply", included: false },
                   { text: "Analytics", included: false },
-                  { text: "Team members", included: false },
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
                     {feature.included ? (
@@ -168,7 +167,6 @@ export function PricingSection() {
                   { text: "iOS + Android", included: true },
                   { text: "4-5 star auto-reply", included: true },
                   { text: "Analytics", included: false },
-                  { text: "Team members", included: false },
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
                     {feature.included ? (
@@ -221,7 +219,6 @@ export function PricingSection() {
                   { text: "iOS + Android", included: true },
                   { text: "All ratings auto-reply", included: true },
                   { text: "Basic analytics", included: true },
-                  { text: "2 team members", included: true },
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
                     <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -267,7 +264,6 @@ export function PricingSection() {
                   { text: "iOS + Android", included: true },
                   { text: "All ratings auto-reply", included: true },
                   { text: "Advanced analytics", included: true },
-                  { text: "Unlimited team", included: true },
                   { text: "Priority support", included: true },
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">

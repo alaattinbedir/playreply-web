@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +113,12 @@ export default function AppsPage() {
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [iosCredentialsConfigured, setIosCredentialsConfigured] = useState(false);
 
+  // Auto-sync state
+  const [isAutoSyncing, setIsAutoSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const initialSyncDoneRef = useRef(false);
+
   // Plan info
   const [plan, setPlan] = useState({
     name: "Free",
@@ -120,9 +126,85 @@ export default function AppsPage() {
     appsLimit: 2,
   });
 
+  // Auto-sync all apps
+  const autoSyncAllApps = useCallback(async (showToast = false) => {
+    if (isAutoSyncing) return;
+
+    setIsAutoSyncing(true);
+    try {
+      const currentApps = await getApps();
+      if (currentApps.length === 0) {
+        setIsAutoSyncing(false);
+        return;
+      }
+
+      // Sync all apps in parallel
+      const syncPromises = currentApps.map(async (app) => {
+        // Skip iOS apps without credentials
+        if (app.platform === "ios" && !iosCredentialsConfigured) {
+          return null;
+        }
+
+        try {
+          const response = await fetch("/api/n8n/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ package_name: app.package_name, platform: app.platform }),
+          });
+          return response.ok;
+        } catch {
+          return false;
+        }
+      });
+
+      await Promise.all(syncPromises);
+
+      // Reload data after sync
+      await loadData();
+      setLastSyncTime(new Date());
+
+      if (showToast) {
+        toast.success("Reviews synced");
+      }
+    } catch (error) {
+      console.error("Auto-sync error:", error);
+      if (showToast) {
+        toast.error("Sync failed");
+      }
+    } finally {
+      setIsAutoSyncing(false);
+    }
+  }, [isAutoSyncing, iosCredentialsConfigured]);
+
+  // Initial load
   useEffect(() => {
     loadData();
   }, []);
+
+  // Auto-sync on page load (after initial data load)
+  useEffect(() => {
+    if (!loading && apps.length > 0 && !initialSyncDoneRef.current) {
+      initialSyncDoneRef.current = true;
+      autoSyncAllApps(false);
+    }
+  }, [loading, apps.length, autoSyncAllApps]);
+
+  // Polling: sync every 5 minutes while page is open
+  useEffect(() => {
+    const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+    syncIntervalRef.current = setInterval(() => {
+      if (!isAutoSyncing && apps.length > 0) {
+        autoSyncAllApps(false);
+      }
+    }, POLL_INTERVAL);
+
+    return () => {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+      }
+    };
+  }, [apps.length, isAutoSyncing, autoSyncAllApps]);
 
   const loadData = async () => {
     try {
@@ -346,6 +428,36 @@ export default function AppsPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {/* Sync Status Indicator */}
+            {apps.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    {isAutoSyncing ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 animate-spin text-primary" />
+                        <span className="hidden sm:inline">Syncing...</span>
+                      </>
+                    ) : lastSyncTime ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <span className="hidden sm:inline">
+                          Synced {lastSyncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </>
+                    ) : null}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Auto-syncs every 5 minutes</p>
+                  {lastSyncTime && (
+                    <p className="text-xs text-muted-foreground">
+                      Last sync: {lastSyncTime.toLocaleTimeString()}
+                    </p>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            )}
             <Badge variant="outline" className="text-sm py-1 px-3">
               {plan.appsUsed} / {plan.appsLimit} apps
             </Badge>

@@ -10,6 +10,8 @@ export interface App {
   icon_url: string | null;
   created_at: string;
   user_id: string;
+  last_synced_at: string | null;
+  last_auto_sent_at: string | null;
   settings?: AppSettings;
   stats?: AppStats;
 }
@@ -20,6 +22,8 @@ export interface AppSettings {
   auto_reply_min_rating: number;
   auto_approve_min_rating: number | null;
   language_mode: string;
+  sync_interval_minutes: number;
+  auto_send_interval_minutes: number;
 }
 
 export interface AppStats {
@@ -178,6 +182,8 @@ export async function addApp(params: AddAppParams): Promise<App | null> {
       auto_reply_enabled: true,  // Default to true for better onboarding - users can disable if needed
       auto_reply_min_rating: 4,
       language_mode: "same_as_review",
+      sync_interval_minutes: 15,  // Default: sync every 15 minutes
+      auto_send_interval_minutes: 15,  // Default: auto-send every 15 minutes
     });
 
   if (settingsError) {

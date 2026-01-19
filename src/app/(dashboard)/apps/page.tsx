@@ -409,6 +409,8 @@ export default function AppsPage() {
       auto_reply_enabled: boolean;
       auto_reply_min_rating: number;
       auto_approve_min_rating: number | null;
+      sync_interval_minutes: number;
+      auto_send_interval_minutes: number;
     }
   ) => {
     setIsSavingSettings(true);
@@ -1018,6 +1020,8 @@ function AutomationSettingsForm({
     auto_reply_enabled: boolean;
     auto_reply_min_rating: number;
     auto_approve_min_rating: number | null;
+    sync_interval_minutes: number;
+    auto_send_interval_minutes: number;
   }) => void;
   isSaving: boolean;
   onCancel: () => void;
@@ -1031,12 +1035,20 @@ function AutomationSettingsForm({
   const [autoApproveMinRating, setAutoApproveMinRating] = useState(
     app.settings?.auto_approve_min_rating?.toString() || "none"
   );
+  const [syncInterval, setSyncInterval] = useState(
+    app.settings?.sync_interval_minutes?.toString() || "15"
+  );
+  const [autoSendInterval, setAutoSendInterval] = useState(
+    app.settings?.auto_send_interval_minutes?.toString() || "15"
+  );
 
   const handleSubmit = () => {
     onSave(app.id, {
       auto_reply_enabled: autoReplyEnabled,
       auto_reply_min_rating: parseInt(autoReplyMinRating),
       auto_approve_min_rating: autoApproveMinRating === "none" ? null : parseInt(autoApproveMinRating),
+      sync_interval_minutes: parseInt(syncInterval),
+      auto_send_interval_minutes: parseInt(autoSendInterval),
     });
   };
 
@@ -1142,12 +1154,76 @@ function AutomationSettingsForm({
               </p>
               <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
                 Replies for {autoApproveMinRating}+ star reviews will be sent automatically
-                every hour without your approval.
+                every {autoSendInterval} minutes without your approval.
               </p>
             </div>
           </div>
         </div>
       )}
+
+      {/* Divider */}
+      <div className="border-t" />
+
+      {/* Sync & Timing Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+            <Clock className="h-5 w-5 text-blue-600" />
+          </div>
+          <div>
+            <Label className="text-base font-medium">
+              Sync & Timing
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              Control how often reviews are synced and replies are sent
+            </p>
+          </div>
+        </div>
+
+        <div className="ml-[52px] space-y-4">
+          {/* Sync Interval */}
+          <div className="space-y-2">
+            <Label htmlFor="sync-interval" className="text-sm">
+              Review Sync Interval
+            </Label>
+            <Select value={syncInterval} onValueChange={setSyncInterval}>
+              <SelectTrigger id="sync-interval" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">Every 5 minutes (Fastest)</SelectItem>
+                <SelectItem value="15">Every 15 minutes (Recommended)</SelectItem>
+                <SelectItem value="30">Every 30 minutes</SelectItem>
+                <SelectItem value="60">Every 1 hour</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              How often to check for new reviews from the app store
+            </p>
+          </div>
+
+          {/* Auto-Send Interval */}
+          <div className="space-y-2">
+            <Label htmlFor="auto-send-interval" className="text-sm">
+              Auto-Send Interval
+            </Label>
+            <Select value={autoSendInterval} onValueChange={setAutoSendInterval}>
+              <SelectTrigger id="auto-send-interval" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">Every 5 minutes (Fastest)</SelectItem>
+                <SelectItem value="15">Every 15 minutes (Recommended)</SelectItem>
+                <SelectItem value="30">Every 30 minutes</SelectItem>
+                <SelectItem value="60">Every 1 hour</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              How often to send approved replies to the app store
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Actions */}
       <DialogFooter className="pt-4">

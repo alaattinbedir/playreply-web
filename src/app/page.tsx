@@ -13,7 +13,10 @@ import {
   Star,
   ArrowRight,
   Play,
-  ChevronRight
+  ChevronRight,
+  Smartphone,
+  Send,
+  RefreshCw
 } from "lucide-react";
 import { PricingSection } from "@/components/pricing-section";
 
@@ -172,6 +175,12 @@ export default function Home() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
                 {
+                  icon: Smartphone,
+                  title: "Dual Platform Support",
+                  description: "Manage both Google Play and App Store reviews from one unified dashboard. No switching between consoles.",
+                  gradient: "from-slate-500/20 to-zinc-500/20"
+                },
+                {
                   icon: Zap,
                   title: "AI-Powered Replies",
                   description: "Claude AI generates contextual, empathetic responses based on review content, rating, and sentiment.",
@@ -182,6 +191,18 @@ export default function Home() {
                   title: "Multi-Language Support",
                   description: "Automatically detect and respond in 11+ languages including English, Turkish, German, Spanish, and more.",
                   gradient: "from-blue-500/20 to-cyan-500/20"
+                },
+                {
+                  icon: Send,
+                  title: "Auto-Reply",
+                  description: "Set it and forget it. Enable automatic reply sending for approved responses - completely hands-off.",
+                  gradient: "from-teal-500/20 to-emerald-500/20"
+                },
+                {
+                  icon: RefreshCw,
+                  title: "Edit & Regenerate",
+                  description: "Full control over every reply. Edit AI responses before sending or regenerate with one click if needed.",
+                  gradient: "from-orange-500/20 to-amber-500/20"
                 },
                 {
                   icon: Shield,
@@ -198,7 +219,7 @@ export default function Home() {
                 {
                   icon: Clock,
                   title: "Auto-Approval",
-                  description: "Set rules to automatically approve and send replies for positive reviews, saving even more time.",
+                  description: "Set rating thresholds to automatically approve replies for positive reviews, saving even more time.",
                   gradient: "from-red-500/20 to-rose-500/20"
                 },
                 {

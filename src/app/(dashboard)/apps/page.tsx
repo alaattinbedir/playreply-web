@@ -264,6 +264,8 @@ export default function AppsPage() {
               auto_reply_min_rating: app.settings?.auto_reply_min_rating ?? 4,
               auto_approve_min_rating: app.settings?.auto_approve_min_rating ?? null,
               language_mode: app.settings?.language_mode ?? 'same',
+              sync_interval_minutes: app.settings?.sync_interval_minutes ?? 15,
+              auto_send_interval_minutes: app.settings?.auto_send_interval_minutes ?? 15,
             }
           }
         : app
@@ -284,6 +286,8 @@ export default function AppsPage() {
                 auto_reply_min_rating: app.settings?.auto_reply_min_rating ?? 4,
                 auto_approve_min_rating: app.settings?.auto_approve_min_rating ?? null,
                 language_mode: app.settings?.language_mode ?? 'same',
+                sync_interval_minutes: app.settings?.sync_interval_minutes ?? 15,
+                auto_send_interval_minutes: app.settings?.auto_send_interval_minutes ?? 15,
               }
             }
           : app

@@ -294,7 +294,7 @@ export function PricingSection() {
 
         <div className="text-center space-y-2">
           <p className="text-muted-foreground">
-            All plans include a 7-day free trial. No credit card required to start.
+            All plans include a 14-day free trial. No credit card required to start.
           </p>
           <p className="text-sm text-muted-foreground">
             Need a custom plan? <Link href="/contact" className="text-primary hover:underline font-medium">Contact us</Link>

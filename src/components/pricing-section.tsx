@@ -286,7 +286,7 @@ export function PricingSection() {
                 onClick={() => handleCheckout('studio')}
                 disabled={isLoading || checkoutPlan === 'studio'}
               >
-                {checkoutPlan === 'studio' ? 'Loading...' : 'Contact Sales'}
+                {checkoutPlan === 'studio' ? 'Loading...' : 'Start Free Trial'}
               </Button>
             </CardFooter>
           </Card>

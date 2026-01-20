@@ -198,7 +198,7 @@ function PlatformIcon({ platform }: { platform: "android" | "ios" | null }) {
   );
 }
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);

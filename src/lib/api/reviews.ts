@@ -44,7 +44,7 @@ export interface PaginatedReviews {
   hasMore: boolean;
 }
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 export async function getReviews(
   filters?: ReviewFilters,

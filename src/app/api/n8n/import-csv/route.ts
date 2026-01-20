@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const N8N_WEBHOOK_BASE_URL = process.env.N8N_WEBHOOK_BASE_URL || "https://mobixo.app.n8n.cloud/webhook";
+const N8N_WEBHOOK_BASE_URL = process.env.N8N_WEBHOOK_BASE_URL || "https://n8n-production-d1805.up.railway.app/webhook";
 
 export async function POST(request: Request) {
   try {

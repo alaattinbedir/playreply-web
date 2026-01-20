@@ -204,7 +204,7 @@ export async function addApp(params: AddAppParams): Promise<App | null> {
  * This is called after adding a new app to immediately sync reviews
  */
 async function triggerFetchReviews(platform: "android" | "ios"): Promise<void> {
-  const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "https://mobixo.app.n8n.cloud/webhook";
+  const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "https://n8n-production-d1805.up.railway.app/webhook";
 
   // Trigger the appropriate workflow based on platform
   const endpoint = platform === "ios" ? "fetch-ios-reviews" : "fetch-reviews";

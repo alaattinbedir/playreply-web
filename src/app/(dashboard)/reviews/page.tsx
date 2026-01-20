@@ -207,6 +207,7 @@ export default function ReviewsPage() {
     pending: number;
     approved: number;
     replied: number;
+    ignored: number;
     avgRating: number;
   } | null>(null);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
@@ -231,6 +232,8 @@ export default function ReviewsPage() {
     // Ready to Send = reviews with approved replies (waiting to be sent)
     const approvedCount = reviews.filter((r) => r.reply?.send_status === "approved").length;
     const repliedCount = reviews.filter((r) => r.status === "replied").length;
+    // Ignored = reviews skipped due to low rating (need manual action)
+    const ignoredCount = reviews.filter((r) => r.status === "ignored").length;
     const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
     const avgRating = reviews.length > 0 ? totalRating / reviews.length : 0;
 
@@ -240,6 +243,7 @@ export default function ReviewsPage() {
       pending: pendingCount,
       approved: approvedCount,
       replied: repliedCount,
+      ignored: ignoredCount,
       avgRating,
     };
   }, [reviews]);
@@ -1082,13 +1086,21 @@ export default function ReviewsPage() {
                 Showing stats for filtered results ({filteredStats.total} reviews)
               </p>
             )}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold">
                     {filteredStats?.new ?? stats?.new ?? 0}
                   </div>
                   <div className="text-xs text-muted-foreground">New Reviews</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {filteredStats?.ignored ?? stats?.ignored ?? 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Needs Attention</div>
                 </CardContent>
               </Card>
               <Card>

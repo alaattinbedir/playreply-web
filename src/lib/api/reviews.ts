@@ -365,6 +365,7 @@ export async function getReviewStats(): Promise<{
   pending: number;
   approved: number;
   replied: number;
+  ignored: number;
   avgRating: number;
 }> {
   const supabase = createClient();
@@ -395,6 +396,12 @@ export async function getReviewStats(): Promise<{
     .select("*", { count: "exact", head: true })
     .eq("status", "replied");
 
+  // Ignored = reviews skipped due to low rating (need manual action)
+  const { count: ignored } = await supabase
+    .from("reviews")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "ignored");
+
   const { data: ratingData } = await supabase
     .from("reviews")
     .select("rating");
@@ -409,6 +416,7 @@ export async function getReviewStats(): Promise<{
     pending: pending || 0,
     approved: approved || 0,
     replied: replied || 0,
+    ignored: ignored || 0,
     avgRating,
   };
 }

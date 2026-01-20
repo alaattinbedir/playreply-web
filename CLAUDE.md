@@ -66,7 +66,7 @@ src/
 
 - **Google Play**: Shared service account model - users grant "Reply to reviews" permission
 - **App Store**: Per-user credentials (Issuer ID, Key ID, Private Key) stored in Supabase
-- **n8n**: Webhook-based automation at `N8N_WEBHOOK_BASE_URL`
+- **n8n**: Webhook-based automation at `N8N_WEBHOOK_BASE_URL` (Railway self-hosted: `https://n8n-production-d1805.up.railway.app`)
 - **Paddle**: Subscription management with 4 tiers (Free, Starter, Pro, Studio)
 
 ## Environment Variables
@@ -74,7 +74,7 @@ src/
 Required variables (see `.env.local.example`):
 - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (for webhooks)
-- `N8N_WEBHOOK_BASE_URL`
+- `N8N_WEBHOOK_BASE_URL` / `NEXT_PUBLIC_N8N_WEBHOOK_URL` (Railway: `https://n8n-production-d1805.up.railway.app/webhook`)
 - `NEXT_PUBLIC_PADDLE_*` variables for billing
 - `NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL`
 

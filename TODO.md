@@ -117,9 +117,9 @@
   4. ✅ "Resend API Key" Header Auth credential created in n8n
   5. ✅ Workflows activated and tested successfully
 
-### n8n Notification Workflows
-- [x] `new-review-notification.json` - Webhook-triggered email alerts (ID: aA5uGo92DiBCLc7l)
-- [x] `weekly-report.json` - Monday 09:00 weekly summary (ID: TnejZpPpkgarXt0I)
+### n8n Notification Workflows (Railway Self-Hosted)
+- [x] `new-review-notification.json` - Webhook-triggered email alerts
+- [x] `weekly-report.json` - Monday 09:00 weekly summary
 
 ---
 

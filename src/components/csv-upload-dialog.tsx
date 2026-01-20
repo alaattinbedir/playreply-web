@@ -258,12 +258,12 @@ export function CSVUploadDialog({
               <HelpCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                  Neden geçmiş yorumları import etmeliyim?
+                  Why should I import historical reviews?
                 </p>
                 <p className="text-xs text-blue-700 dark:text-blue-300">
-                  Google Play API <strong>sadece son 7 günün</strong> yorumlarını döndürüyor.
-                  Daha eski yorumlarınızı almak için aşağıdaki yöntemlerden birini kullanabilirsiniz.
-                  Bu işlem <strong>bir kez</strong> yapılır - sonrasında günlük senkronizasyon otomatik devam eder.
+                  Google Play API only returns <strong>the last 7 days</strong> of reviews.
+                  Use one of the methods below to import older reviews.
+                  This is a <strong>one-time</strong> process - daily sync continues automatically afterwards.
                 </p>
               </div>
             </div>
@@ -274,16 +274,16 @@ export function CSVUploadDialog({
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="csv-upload" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
-                  CSV Yükle
+                  Upload CSV
                   <span className="ml-1 px-1.5 py-0.5 text-[10px] font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">
-                    Önerilen
+                    Recommended
                   </span>
                 </TabsTrigger>
                 <TabsTrigger value="cloud-storage" className="flex items-center gap-2">
                   <Cloud className="h-4 w-4" />
                   Cloud Storage
                   <span className="ml-1 px-1.5 py-0.5 text-[10px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
-                    Gelişmiş
+                    Advanced
                   </span>
                 </TabsTrigger>
               </TabsList>
@@ -296,11 +296,11 @@ export function CSVUploadDialog({
                     <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-amber-800 dark:text-amber-200">
-                        Terminal komutu gerektirir
+                        Requires terminal command
                       </p>
                       <p className="text-xs text-amber-700 dark:text-amber-300">
-                        Google Play bucket&apos;larına erişim için <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">gsutil</code> komutu
-                        kullanmanız gerekir. Teknik bilgi gerektirdiği için <strong>CSV Yükle</strong> yöntemini öneriyoruz.
+                        Access to Google Play buckets requires the <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">gsutil</code> command.
+                        We recommend the <strong>Upload CSV</strong> method as it&apos;s simpler.
                       </p>
                     </div>
                   </div>
@@ -328,28 +328,28 @@ export function CSVUploadDialog({
                         Play Console
                       </a>
                       {" → Download reports → Reviews → "}
-                      <strong>&quot;Cloud Storage URI&apos;sını kopyala&quot;</strong>
+                      <strong>&quot;Copy Cloud Storage URI&quot;</strong>
                     </p>
                   </div>
 
                   {/* Setup Instructions */}
                   <div className="rounded-lg bg-muted/50 p-4 space-y-3">
                     <p className="text-xs font-medium">
-                      Terminal&apos;de şu komutu çalıştırın:
+                      Run this command in Terminal:
                     </p>
                     <div className="space-y-2">
                       <code className="block px-3 py-2 bg-gray-900 dark:bg-gray-950 rounded text-xs font-mono text-green-400 overflow-x-auto">
                         gsutil iam ch serviceAccount:playreplyservice@playreply.iam.gserviceaccount.com:objectViewer gs://BUCKET_ID
                       </code>
                       <p className="text-[10px] text-muted-foreground">
-                        BUCKET_ID yerine yukarıdaki URL&apos;deki bucket adını yazın (örn: pubsite_prod_rev_123...)
+                        Replace BUCKET_ID with the bucket name from the URL above (e.g., pubsite_prod_rev_123...)
                       </p>
                     </div>
                     <div className="pt-2 border-t">
                       <p className="text-xs text-muted-foreground">
-                        <strong>gsutil yüklü değilse:</strong>{" "}
-                        <code className="bg-muted px-1 rounded">brew install google-cloud-sdk</code> ile yükleyip{" "}
-                        <code className="bg-muted px-1 rounded">gcloud auth login</code> ile giriş yapın.
+                        <strong>If gsutil is not installed:</strong>{" "}
+                        Install with <code className="bg-muted px-1 rounded">brew install google-cloud-sdk</code> then{" "}
+                        login with <code className="bg-muted px-1 rounded">gcloud auth login</code>.
                       </p>
                     </div>
                   </div>
@@ -362,15 +362,15 @@ export function CSVUploadDialog({
                 <div className="grid grid-cols-3 gap-2">
                   <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400">
                     <Sparkles className="h-3.5 w-3.5" />
-                    <span>Kolay kullanım</span>
+                    <span>Easy to use</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400">
                     <Shield className="h-3.5 w-3.5" />
-                    <span>Kurulum gerektirmez</span>
+                    <span>No setup required</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400">
                     <CheckCircle2 className="h-3.5 w-3.5" />
-                    <span>Hemen çalışır</span>
+                    <span>Works instantly</span>
                   </div>
                 </div>
 
@@ -421,7 +421,7 @@ export function CSVUploadDialog({
                           }}
                         >
                           <X className="h-4 w-4 mr-1" />
-                          Kaldır
+                          Remove
                         </Button>
                       </>
                     ) : (
@@ -431,10 +431,10 @@ export function CSVUploadDialog({
                         </div>
                         <div>
                           <p className="font-medium">
-                            {dragActive ? "CSV dosyasını bırakın" : "CSV dosyasını sürükle & bırak"}
+                            {dragActive ? "Drop CSV file here" : "Drag & drop CSV file"}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            veya tıklayarak seçin
+                            or click to select
                           </p>
                         </div>
                       </>
@@ -443,7 +443,7 @@ export function CSVUploadDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground">CSV dosyası nasıl indirilir:</p>
+                  <p className="text-xs font-medium text-muted-foreground">How to download CSV file:</p>
                   <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
                     <li>
                       <a
@@ -457,12 +457,12 @@ export function CSVUploadDialog({
                       {" → Download reports → Reviews"}
                     </li>
                     <li>
-                      İstediğiniz ayın yanındaki indirme ikonuna (↓) tıklayın
+                      Click the download icon (↓) next to the month you want
                       <span className="block text-[10px] text-muted-foreground/70 mt-0.5 ml-0">
-                        💡 İpucu: Dosya tarayıcıda açılırsa, linke sağ tıklayıp &quot;Bağlantıyı farklı kaydet&quot; seçin
+                        💡 Tip: If the file opens in browser, right-click the link and select &quot;Save link as&quot;
                       </span>
                     </li>
-                    <li>İndirilen CSV dosyasını buraya yükleyin</li>
+                    <li>Upload the downloaded CSV file here</li>
                   </ol>
                 </div>
               </TabsContent>
@@ -478,7 +478,7 @@ export function CSVUploadDialog({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>
-                    {mode === "cloud-storage" ? "Cloud Storage'a bağlanılıyor..." : "Yorumlar import ediliyor..."}
+                    {mode === "cloud-storage" ? "Connecting to Cloud Storage..." : "Importing reviews..."}
                   </span>
                   <span>{progress}%</span>
                 </div>
@@ -486,8 +486,8 @@ export function CSVUploadDialog({
               </div>
               <p className="text-xs text-center text-muted-foreground">
                 {mode === "cloud-storage"
-                  ? "Bucket'ınızdaki tüm yorum dosyaları çekiliyor..."
-                  : "Büyük dosyalar için biraz zaman alabilir"
+                  ? "Fetching all review files from your bucket..."
+                  : "This may take a while for large files"
                 }
               </p>
             </div>
@@ -502,12 +502,12 @@ export function CSVUploadDialog({
                 </div>
                 <div>
                   <p className="font-semibold text-lg">
-                    {result.success_count === -1 ? "Import Başlatıldı!" : "Import Tamamlandı!"}
+                    {result.success_count === -1 ? "Import Started!" : "Import Complete!"}
                   </p>
                   <p className="text-muted-foreground">
                     {result.success_count === -1
-                      ? "Yorumlar arka planda import ediliyor"
-                      : `${result.success_count} yorum başarıyla import edildi`
+                      ? "Reviews are being imported in the background"
+                      : `${result.success_count} reviews imported successfully`
                     }
                   </p>
                 </div>
@@ -518,15 +518,15 @@ export function CSVUploadDialog({
                 <div className="grid grid-cols-3 gap-4 py-2">
                   <div className="text-center p-3 rounded-lg bg-muted/50">
                     <p className="text-2xl font-bold text-green-600">{result.success_count}</p>
-                    <p className="text-xs text-muted-foreground">Import Edildi</p>
+                    <p className="text-xs text-muted-foreground">Imported</p>
                   </div>
                   <div className="text-center p-3 rounded-lg bg-muted/50">
                     <p className="text-2xl font-bold text-red-600">{result.error_count}</p>
-                    <p className="text-xs text-muted-foreground">Hata</p>
+                    <p className="text-xs text-muted-foreground">Errors</p>
                   </div>
                   <div className="text-center p-3 rounded-lg bg-muted/50">
                     <p className="text-2xl font-bold">{result.total_processed}</p>
-                    <p className="text-xs text-muted-foreground">Toplam</p>
+                    <p className="text-xs text-muted-foreground">Total</p>
                   </div>
                 </div>
               )}
@@ -534,8 +534,8 @@ export function CSVUploadDialog({
               <div className="rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 p-3">
                 <p className="text-sm text-green-700 dark:text-green-300 text-center">
                   {result.success_count === -1
-                    ? "Yorumlar kısa süre içinde görünecek. AI yanıtları otomatik olarak üretilecek."
-                    : "Yeni yorumlar için AI yanıtları otomatik olarak üretilecek"
+                    ? "Reviews will appear shortly. AI replies will be generated automatically."
+                    : "AI replies will be generated automatically for new reviews"
                   }
                 </p>
               </div>
@@ -550,9 +550,9 @@ export function CSVUploadDialog({
                   <AlertCircle className="h-6 w-6 text-red-600" />
                 </div>
                 <div>
-                  <p className="font-semibold text-lg">Import Başarısız</p>
+                  <p className="font-semibold text-lg">Import Failed</p>
                   <p className="text-muted-foreground text-sm">
-                    {errorMessage || "Yorumlar import edilirken bir hata oluştu"}
+                    {errorMessage || "An error occurred while importing reviews"}
                   </p>
                 </div>
               </div>
@@ -560,13 +560,13 @@ export function CSVUploadDialog({
               {mode === "cloud-storage" && (
                 <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-3">
                   <p className="text-xs text-amber-700 dark:text-amber-300 text-center">
-                    Service account&apos;a Storage Object Viewer izni verdiğinizden emin olun
+                    Make sure you&apos;ve granted Storage Object Viewer permission to the service account
                   </p>
                 </div>
               )}
 
               <Button variant="outline" className="w-full" onClick={resetUpload}>
-                Tekrar Dene
+                Try Again
               </Button>
             </div>
           )}
@@ -584,18 +584,18 @@ export function CSVUploadDialog({
           {uploadState === "idle" && (
             <>
               <Button variant="outline" onClick={handleClose}>
-                İptal
+                Cancel
               </Button>
               <Button onClick={handleImport} disabled={!canImport}>
                 {mode === "cloud-storage" ? (
                   <>
                     <Cloud className="mr-2 h-4 w-4" />
-                    Cloud Storage&apos;dan Import Et
+                    Import from Cloud Storage
                   </>
                 ) : (
                   <>
                     <Upload className="mr-2 h-4 w-4" />
-                    Yorumları Import Et
+                    Import Reviews
                   </>
                 )}
               </Button>
@@ -603,7 +603,7 @@ export function CSVUploadDialog({
           )}
           {uploadState === "success" && (
             <Button onClick={handleClose}>
-              Tamam
+              Done
             </Button>
           )}
         </DialogFooter>

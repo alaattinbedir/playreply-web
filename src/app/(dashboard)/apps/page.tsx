@@ -1082,121 +1082,143 @@ function AutomationSettingsForm({
   };
 
   return (
-    <div className="space-y-4 py-2">
-      {/* Auto-Reply */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Bot className="h-4 w-4 text-primary" />
-          <Label htmlFor="auto-reply" className="text-sm font-medium">
-            Auto-Reply
-          </Label>
+    <div className="space-y-5 py-2">
+      {/* Auto-Reply Section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Bot className="h-4 w-4 text-primary" />
+            <div>
+              <Label htmlFor="auto-reply" className="text-sm font-medium">Auto-Reply</Label>
+              <p className="text-xs text-muted-foreground">Generate AI replies automatically</p>
+            </div>
+          </div>
+          <Switch
+            id="auto-reply"
+            checked={autoReplyEnabled}
+            onCheckedChange={setAutoReplyEnabled}
+          />
         </div>
-        <Switch
-          id="auto-reply"
-          checked={autoReplyEnabled}
-          onCheckedChange={setAutoReplyEnabled}
-        />
-      </div>
 
-      {autoReplyEnabled && (
-        <div className="space-y-1.5 pl-6">
-          <Label htmlFor="min-rating" className="text-xs text-muted-foreground">
-            Minimum Rating
-          </Label>
-          <Select value={autoReplyMinRating} onValueChange={setAutoReplyMinRating}>
-            <SelectTrigger id="min-rating" className="h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1">All reviews (1-5 stars)</SelectItem>
-              <SelectItem value="2">2+ stars</SelectItem>
-              <SelectItem value="3">3+ stars</SelectItem>
-              <SelectItem value="4">4+ stars (Recommended)</SelectItem>
-              <SelectItem value="5">Only 5 stars</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+        {autoReplyEnabled && (
+          <div className="space-y-1.5 pl-6">
+            <Label htmlFor="min-rating" className="text-xs text-muted-foreground">
+              Minimum Rating for Auto-Reply
+            </Label>
+            <Select value={autoReplyMinRating} onValueChange={setAutoReplyMinRating}>
+              <SelectTrigger id="min-rating" className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">All reviews (1-5 stars)</SelectItem>
+                <SelectItem value="2">2+ stars</SelectItem>
+                <SelectItem value="3">3+ stars</SelectItem>
+                <SelectItem value="4">4+ stars (Recommended)</SelectItem>
+                <SelectItem value="5">Only 5 stars</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
 
       <div className="border-t" />
 
-      {/* Auto-Approve */}
-      <div className="space-y-1.5">
+      {/* Auto-Approve Section */}
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-green-600" />
-          <Label className="text-sm font-medium">Auto-Approve Threshold</Label>
+          <div>
+            <Label className="text-sm font-medium">Auto-Approve</Label>
+            <p className="text-xs text-muted-foreground">Skip manual approval for high-rated reviews</p>
+          </div>
         </div>
-        <Select value={autoApproveMinRating} onValueChange={setAutoApproveMinRating}>
-          <SelectTrigger className="h-9">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Manual approval for all</SelectItem>
-            <SelectItem value="5">Only 5 stars</SelectItem>
-            <SelectItem value="4">4+ stars (Recommended)</SelectItem>
-            <SelectItem value="3">3+ stars</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
-      {autoApproveMinRating !== "none" && (
-        <div className="flex items-center gap-2 rounded-md bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
-          <Send className="h-3.5 w-3.5 shrink-0" />
-          <span>{autoApproveMinRating}+ star replies sent automatically every {autoSendInterval}min</span>
+        <div className="space-y-1.5 pl-6">
+          <Label htmlFor="auto-approve-rating" className="text-xs text-muted-foreground">
+            Auto-Approve Threshold
+          </Label>
+          <Select value={autoApproveMinRating} onValueChange={setAutoApproveMinRating}>
+            <SelectTrigger id="auto-approve-rating" className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Manual approval for all</SelectItem>
+              <SelectItem value="5">Only 5 stars</SelectItem>
+              <SelectItem value="4">4+ stars (Recommended)</SelectItem>
+              <SelectItem value="3">3+ stars</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      )}
+
+        {autoApproveMinRating !== "none" && (
+          <div className="flex items-center gap-2 ml-6 rounded-md bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+            <Send className="h-3.5 w-3.5 shrink-0" />
+            <span>Replies for {autoApproveMinRating}+ star reviews will be sent automatically</span>
+          </div>
+        )}
+      </div>
 
       <div className="border-t" />
 
-      {/* Timing */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <Label htmlFor="sync-interval" className="text-xs text-muted-foreground">
-            Sync Interval
-          </Label>
-          <Select value={syncInterval} onValueChange={setSyncInterval}>
-            <SelectTrigger id="sync-interval" className="h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5 min</SelectItem>
-              <SelectItem value="15">15 min</SelectItem>
-              <SelectItem value="30">30 min</SelectItem>
-              <SelectItem value="60">1 hour</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Timing Section */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-blue-600" />
+          <div>
+            <Label className="text-sm font-medium">Timing</Label>
+            <p className="text-xs text-muted-foreground">Sync and send intervals</p>
+          </div>
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="auto-send-interval" className="text-xs text-muted-foreground">
-            Auto-Send Interval
-          </Label>
-          <Select value={autoSendInterval} onValueChange={setAutoSendInterval}>
-            <SelectTrigger id="auto-send-interval" className="h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5 min</SelectItem>
-              <SelectItem value="15">15 min</SelectItem>
-              <SelectItem value="30">30 min</SelectItem>
-              <SelectItem value="60">1 hour</SelectItem>
-            </SelectContent>
-          </Select>
+
+        <div className="grid grid-cols-2 gap-3 pl-6">
+          <div className="space-y-1.5">
+            <Label htmlFor="sync-interval" className="text-xs text-muted-foreground">
+              Review Sync
+            </Label>
+            <Select value={syncInterval} onValueChange={setSyncInterval}>
+              <SelectTrigger id="sync-interval" className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">Every 5 min</SelectItem>
+                <SelectItem value="15">Every 15 min</SelectItem>
+                <SelectItem value="30">Every 30 min</SelectItem>
+                <SelectItem value="60">Every hour</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="auto-send-interval" className="text-xs text-muted-foreground">
+              Auto-Send
+            </Label>
+            <Select value={autoSendInterval} onValueChange={setAutoSendInterval}>
+              <SelectTrigger id="auto-send-interval" className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">Every 5 min</SelectItem>
+                <SelectItem value="15">Every 15 min</SelectItem>
+                <SelectItem value="30">Every 30 min</SelectItem>
+                <SelectItem value="60">Every hour</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
       {/* Actions */}
       <DialogFooter className="pt-2">
-        <Button variant="outline" size="sm" onClick={onCancel} disabled={isSaving}>
+        <Button variant="outline" onClick={onCancel} disabled={isSaving}>
           Cancel
         </Button>
-        <Button size="sm" onClick={handleSubmit} disabled={isSaving}>
+        <Button onClick={handleSubmit} disabled={isSaving}>
           {isSaving ? (
             <>
-              <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
               Saving...
             </>
           ) : (
-            "Save"
+            "Save Settings"
           )}
         </Button>
       </DialogFooter>

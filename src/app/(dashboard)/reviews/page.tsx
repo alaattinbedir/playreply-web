@@ -198,6 +198,8 @@ function PlatformIcon({ platform }: { platform: "android" | "ios" | null }) {
   );
 }
 
+const PAGE_SIZE = 20;
+
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [apps, setApps] = useState<App[]>([]);
@@ -221,6 +223,10 @@ export default function ReviewsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const [generatingReplyId, setGeneratingReplyId] = useState<string | null>(null);
+  // Pagination state
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Calculate dynamic stats from filtered reviews
   const filteredStats = useMemo(() => {
@@ -255,22 +261,49 @@ export default function ReviewsPage() {
   const fetchData = async (showLoading = true) => {
     if (showLoading) setIsLoading(true);
     try {
-      const [reviewsData, appsData, statsData] = await Promise.all([
-        getReviews({
-          status: filterStatus !== "all" ? filterStatus : undefined,
-          rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
-          appId: filterApp !== "all" ? filterApp : undefined,
-        }),
+      const filters = {
+        status: filterStatus !== "all" ? filterStatus : undefined,
+        rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
+        appId: filterApp !== "all" ? filterApp : undefined,
+      };
+      const [paginatedData, appsData, statsData] = await Promise.all([
+        getReviews(filters, { offset: 0, limit: PAGE_SIZE }),
         getApps(),
         getReviewStats(),
       ]);
-      setReviews(reviewsData);
+      setReviews(paginatedData.reviews);
+      setTotalReviews(paginatedData.total);
+      setHasMore(paginatedData.hasMore);
       setApps(appsData);
       setStats(statsData);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       if (showLoading) setIsLoading(false);
+    }
+  };
+
+  // Load more reviews
+  const loadMore = async () => {
+    if (isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+    try {
+      const filters = {
+        status: filterStatus !== "all" ? filterStatus : undefined,
+        rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
+        appId: filterApp !== "all" ? filterApp : undefined,
+      };
+      const paginatedData = await getReviews(filters, {
+        offset: reviews.length,
+        limit: PAGE_SIZE
+      });
+      setReviews((prev) => [...prev, ...paginatedData.reviews]);
+      setHasMore(paginatedData.hasMore);
+    } catch (error) {
+      console.error("Error loading more reviews:", error);
+      toast.error("Failed to load more reviews");
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -291,20 +324,24 @@ export default function ReviewsPage() {
         clearInterval(pollInterval);
         return;
       }
-      // Fetch with current filter values
-      getReviews({
+      // Fetch with current filter values - only refresh current page worth of data
+      const filters = {
         status: filterStatus !== "all" ? filterStatus : undefined,
         rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
         appId: filterApp !== "all" ? filterApp : undefined,
-      }).then((reviewsData) => {
-        setReviews(reviewsData);
-      }).catch((error) => {
-        console.error("Error polling reviews:", error);
-      });
+      };
+      getReviews(filters, { offset: 0, limit: Math.max(reviews.length, PAGE_SIZE) })
+        .then((paginatedData) => {
+          setReviews(paginatedData.reviews);
+          setTotalReviews(paginatedData.total);
+          setHasMore(paginatedData.hasMore);
+        }).catch((error) => {
+          console.error("Error polling reviews:", error);
+        });
     }, 5000);
 
     return () => clearInterval(pollInterval);
-  }, [filterStatus, filterRating, filterApp]);
+  }, [filterStatus, filterRating, filterApp, reviews.length]);
 
   const handleOpenReview = (review: Review) => {
     setSelectedReview(review);
@@ -524,15 +561,18 @@ export default function ReviewsPage() {
     }
 
     // Refresh reviews
-    const [reviewsData, statsData] = await Promise.all([
-      getReviews({
-        status: filterStatus !== "all" ? filterStatus : undefined,
-        rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
-        appId: filterApp !== "all" ? filterApp : undefined,
-      }),
+    const filters = {
+      status: filterStatus !== "all" ? filterStatus : undefined,
+      rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
+      appId: filterApp !== "all" ? filterApp : undefined,
+    };
+    const [paginatedData, statsData] = await Promise.all([
+      getReviews(filters, { offset: 0, limit: Math.max(reviews.length, PAGE_SIZE) }),
       getReviewStats(),
     ]);
-    setReviews(reviewsData);
+    setReviews(paginatedData.reviews);
+    setTotalReviews(paginatedData.total);
+    setHasMore(paginatedData.hasMore);
     setStats(statsData);
     setSelectedIds(new Set());
     setIsBulkProcessing(false);
@@ -562,16 +602,19 @@ export default function ReviewsPage() {
     }
 
     // Refresh reviews
-    const [reviewsData, statsData] = await Promise.all([
-      getReviews({
-        status: filterStatus !== "all" ? filterStatus : undefined,
-        rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
-        appId: filterApp !== "all" ? filterApp : undefined,
-      }),
+    const filtersIgnore = {
+      status: filterStatus !== "all" ? filterStatus : undefined,
+      rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
+      appId: filterApp !== "all" ? filterApp : undefined,
+    };
+    const [paginatedIgnoreData, statsIgnoreData] = await Promise.all([
+      getReviews(filtersIgnore, { offset: 0, limit: Math.max(reviews.length, PAGE_SIZE) }),
       getReviewStats(),
     ]);
-    setReviews(reviewsData);
-    setStats(statsData);
+    setReviews(paginatedIgnoreData.reviews);
+    setTotalReviews(paginatedIgnoreData.total);
+    setHasMore(paginatedIgnoreData.hasMore);
+    setStats(statsIgnoreData);
     setSelectedIds(new Set());
     setIsBulkProcessing(false);
 
@@ -607,16 +650,19 @@ export default function ReviewsPage() {
     }
 
     // Refresh reviews
-    const [reviewsData, statsData] = await Promise.all([
-      getReviews({
-        status: filterStatus !== "all" ? filterStatus : undefined,
-        rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
-        appId: filterApp !== "all" ? filterApp : undefined,
-      }),
+    const filtersSend = {
+      status: filterStatus !== "all" ? filterStatus : undefined,
+      rating: filterRating !== "all" ? parseInt(filterRating) : undefined,
+      appId: filterApp !== "all" ? filterApp : undefined,
+    };
+    const [paginatedSendData, statsSendData] = await Promise.all([
+      getReviews(filtersSend, { offset: 0, limit: Math.max(reviews.length, PAGE_SIZE) }),
       getReviewStats(),
     ]);
-    setReviews(reviewsData);
-    setStats(statsData);
+    setReviews(paginatedSendData.reviews);
+    setTotalReviews(paginatedSendData.total);
+    setHasMore(paginatedSendData.hasMore);
+    setStats(statsSendData);
     setSelectedIds(new Set());
     setIsBulkProcessing(false);
 
@@ -657,7 +703,7 @@ export default function ReviewsPage() {
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-sm py-1 px-3">
-              {reviews.length} reviews
+              {reviews.length} of {totalReviews} reviews
             </Badge>
           </div>
         </div>
@@ -933,6 +979,29 @@ export default function ReviewsPage() {
                 </CardContent>
               </Card>
             ))}
+
+            {/* Load More Button */}
+            {hasMore && (
+              <div className="flex justify-center pt-4">
+                <Button
+                  variant="outline"
+                  onClick={loadMore}
+                  disabled={isLoadingMore}
+                  className="min-w-[200px]"
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      Load More ({totalReviews - reviews.length} remaining)
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

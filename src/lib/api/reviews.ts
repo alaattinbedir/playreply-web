@@ -38,17 +38,48 @@ export interface ReviewFilters {
   appId?: string;
 }
 
-export async function getReviews(filters?: ReviewFilters): Promise<Review[]> {
-  const supabase = createClient();
+export interface PaginatedReviews {
+  reviews: Review[];
+  total: number;
+  hasMore: boolean;
+}
 
-  // Fetch reviews with app info
+const PAGE_SIZE = 20;
+
+export async function getReviews(
+  filters?: ReviewFilters,
+  options?: { offset?: number; limit?: number }
+): Promise<PaginatedReviews> {
+  const supabase = createClient();
+  const offset = options?.offset ?? 0;
+  const limit = options?.limit ?? PAGE_SIZE;
+
+  // First get total count with filters
+  let countQuery = supabase
+    .from("reviews")
+    .select("*", { count: "exact", head: true });
+
+  if (filters?.status && filters.status !== "all") {
+    countQuery = countQuery.eq("status", filters.status);
+  }
+  if (filters?.rating && filters.rating > 0) {
+    countQuery = countQuery.eq("rating", filters.rating);
+  }
+  if (filters?.appId && filters.appId !== "all") {
+    countQuery = countQuery.eq("app_id", filters.appId);
+  }
+
+  const { count: total } = await countQuery;
+
+  // Fetch reviews with app info and pagination
   let query = supabase
     .from("reviews")
     .select(`
       *,
       app:apps(id, display_name, package_name)
     `)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
 
   // Apply filters
   if (filters?.status && filters.status !== "all") {
@@ -65,11 +96,11 @@ export async function getReviews(filters?: ReviewFilters): Promise<Review[]> {
 
   if (reviewsError) {
     console.error("Error fetching reviews:", reviewsError);
-    return [];
+    return { reviews: [], total: 0, hasMore: false };
   }
 
   if (!reviews || reviews.length === 0) {
-    return [];
+    return { reviews: [], total: total || 0, hasMore: false };
   }
 
   // Fetch replies separately and match by review_id
@@ -90,10 +121,16 @@ export async function getReviews(filters?: ReviewFilters): Promise<Review[]> {
   });
 
   // Transform the data to match our interface
-  return reviews.map((review) => ({
+  const transformedReviews = reviews.map((review) => ({
     ...review,
     reply: repliesMap.get(review.review_id) || null,
   }));
+
+  return {
+    reviews: transformedReviews,
+    total: total || 0,
+    hasMore: offset + limit < (total || 0),
+  };
 }
 
 export async function getReviewById(reviewId: string): Promise<Review | null> {

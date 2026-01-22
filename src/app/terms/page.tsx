@@ -22,7 +22,7 @@ export default function TermsPage() {
       {/* Content */}
       <main className="flex-1 container py-12 max-w-4xl">
         <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
-        <p className="text-muted-foreground mb-8">Last updated: January 16, 2025</p>
+        <p className="text-muted-foreground mb-8">Last updated: January 22, 2025</p>
 
         <div className="prose prose-neutral dark:prose-invert max-w-none space-y-8">
           <section>
@@ -58,9 +58,10 @@ export default function TermsPage() {
               PlayReply offers various subscription plans with different features and usage limits:
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-              <li>Free Plan: Limited features, 50 AI replies per month</li>
-              <li>Starter Plan ($29/month): 6 apps, 1,500 AI replies per month</li>
-              <li>Pro Plan ($99/month): 20 apps, 10,000 AI replies per month, team features</li>
+              <li>Free Plan: 2 apps, 50 AI replies per month</li>
+              <li>Starter Plan ($9/month): 4 apps, 500 AI replies per month</li>
+              <li>Pro Plan ($29/month): 12 apps, 3,000 AI replies per month</li>
+              <li>Studio Plan ($79/month): 30+ apps, 10,000 AI replies per month, priority support</li>
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-4">
               Payments are processed securely through Paddle. Subscriptions automatically renew unless

@@ -468,7 +468,7 @@ export default function SettingsPage() {
 
   const handleUpgrade = async (planType: "starter" | "pro" | "studio") => {
     try {
-      await startCheckout(planType, undefined, billingInterval);
+      await startCheckout(planType, user?.email, billingInterval);
     } catch (error) {
       console.error("Checkout error:", error);
       toast.error("Failed to start checkout");

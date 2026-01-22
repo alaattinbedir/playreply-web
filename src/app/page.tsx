@@ -12,7 +12,6 @@ import {
   Check,
   Star,
   ArrowRight,
-  Play,
   ChevronRight,
   Smartphone,
   Send,
@@ -103,18 +102,12 @@ export default function Home() {
                 professional responses to your app reviews in 11+ languages.
               </p>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-4 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-500">
+              {/* CTA Button */}
+              <div className="pt-4 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-500">
                 <Link href="/signup">
                   <Button size="lg" className="h-12 px-8 text-base gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 transition-all">
                     Start Free Trial
                     <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="#demo">
-                  <Button size="lg" variant="outline" className="h-12 px-8 text-base gap-2 hover:bg-muted/50 group">
-                    <Play className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                    Watch Demo
                   </Button>
                 </Link>
               </div>

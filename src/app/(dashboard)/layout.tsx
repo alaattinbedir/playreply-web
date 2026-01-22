@@ -21,8 +21,6 @@ import {
   Settings,
   LogOut,
   Menu,
-  Sparkles,
-  Crown,
   X,
   BarChart3,
 } from "lucide-react";
@@ -126,30 +124,6 @@ export default function DashboardLayout({
             })}
           </nav>
 
-          {/* Upgrade card */}
-          {!plan.isPro && (
-            <div className="px-3 py-4">
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-background border p-4">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-primary/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Crown className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium">Upgrade to Pro</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Get 20 apps, 10K replies/month & more
-                  </p>
-                  <Link href="/settings">
-                    <Button size="sm" className="w-full">
-                      <Sparkles className="mr-2 h-3 w-3" />
-                      Upgrade
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* User menu at bottom */}
           <div className="p-3 border-t">
             <DropdownMenu>
@@ -247,29 +221,6 @@ export default function DashboardLayout({
                     );
                   })}
                 </nav>
-
-                {/* Mobile upgrade card */}
-                {!plan.isPro && (
-                  <div className="px-3 py-4 border-t">
-                    <div className="rounded-xl bg-gradient-to-br from-primary/10 to-background border p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Crown className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-medium">Upgrade to Pro</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mb-3">
-                        Get 20 apps, 10K replies/month & more
-                      </p>
-                      <SheetClose asChild>
-                        <Link href="/settings">
-                          <Button size="sm" className="w-full">
-                            <Sparkles className="mr-2 h-3 w-3" />
-                            Upgrade
-                          </Button>
-                        </Link>
-                      </SheetClose>
-                    </div>
-                  </div>
-                )}
 
                 {/* Mobile user info */}
                 <div className="p-4 border-t">

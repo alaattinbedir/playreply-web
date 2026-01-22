@@ -262,16 +262,11 @@ export default function Home() {
                 Join thousands of developers who use PlayReply to respond faster,
                 improve ratings, and keep users happy.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <div className="pt-4">
                 <Link href="/signup">
                   <Button size="lg" variant="secondary" className="h-12 px-8 text-base gap-2 shadow-xl hover:scale-105 transition-transform">
                     Start Your Free Trial
                     <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="#demo">
-                  <Button size="lg" variant="ghost" className="h-12 px-8 text-base text-primary-foreground hover:bg-primary-foreground/10">
-                    Schedule Demo
                   </Button>
                 </Link>
               </div>
